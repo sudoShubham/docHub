@@ -4,6 +4,8 @@ from googleapiclient.http import MediaIoBaseUpload
 import io
 from rest_framework.response import Response
 
+from googleapiclient.http import MediaInMemoryUpload, MediaFileUpload
+
 def make_file_public(service, file_id):
     """Makes the file public for anyone with the link."""
     permission = {
@@ -164,3 +166,47 @@ def share_folder_with_email(service, folder_id, email):
         print(f"Folder shared successfully with {email}")
     except Exception as e:
         print(f"Error sharing folder with {email}: {str(e)}")
+
+def upload_file_with_versioning(service, folder_id, file):
+    original_filename = file.name
+    file_basename, file_extension = original_filename.rsplit('.', 1) if '.' in original_filename else (original_filename, '')
+
+    # Check for existing files with the same base name
+    query = f"'{folder_id}' in parents and name contains '{file_basename}' and trashed=false"
+    existing_files = service.files().list(q=query, fields="files(name)").execute().get('files', [])
+
+    # Determine the next version number
+    version = 1
+    for existing_file in existing_files:
+        existing_name = existing_file['name']
+        if existing_name.startswith(file_basename) and 'v' in existing_name:
+            try:
+                existing_version = int(existing_name.split('v')[-1].split('.')[0])
+                version = max(version, existing_version + 1)
+            except ValueError:
+                continue
+
+    # Set new filename with version number
+    new_filename = f"{file_basename}_v{version}.{file_extension}" if file_extension else f"{file_basename}_v{version}"
+
+    file_metadata = {
+        'name': new_filename,
+        'parents': [folder_id]
+    }
+
+    # Check file type and set up media upload accordingly
+    if hasattr(file, 'temporary_file_path'):
+        # Use MediaFileUpload for files stored temporarily
+        media = MediaFileUpload(file.temporary_file_path(), mimetype=file.content_type)
+    else:
+        # Use MediaInMemoryUpload for in-memory files
+        media = MediaInMemoryUpload(file.read(), mimetype=file.content_type)
+
+    uploaded_file = service.files().create(body=file_metadata, media_body=media, fields="id, webViewLink").execute()
+
+    file_info = {
+        'file_id': uploaded_file.get('id'),
+        'webViewLink': uploaded_file.get('webViewLink')
+    }
+    print(f"File uploaded successfully: {file_info['webViewLink']}")
+    return file_info

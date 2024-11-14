@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar"; // Adjust path as necessary
+import { XCircleIcon } from "@heroicons/react/20/solid";
 
 const Dashboard = () => {
   const [files, setFiles] = useState({
@@ -31,7 +32,6 @@ const Dashboard = () => {
     const file = e.target.files[0];
     setFiles((prevFiles) => {
       const updatedFiles = { ...prevFiles, [type]: file };
-      console.log("Updated files:", updatedFiles); // Log the updated files after each change
       return updatedFiles;
     });
   };
@@ -55,14 +55,7 @@ const Dashboard = () => {
       formData.append("email", userDetails.email);
     }
 
-    // Log the file names of the selected files
     if (isAnyFileSelected) {
-      const fileNames = Object.keys(files)
-        .filter((key) => files[key]) // Filter out empty files
-        .map((key) => files[key].name); // Get the file names
-
-      console.log("Selected file names:", fileNames); // Log the file names
-
       try {
         const authToken = sessionStorage.getItem("authToken"); // Retrieve auth token from sessionStorage
         const response = await axios.post(
@@ -85,6 +78,20 @@ const Dashboard = () => {
     }
   };
 
+  const handleRemoveFile = (fileType) => {
+    // Reset the file state for the specific file type
+    setFiles((prevFiles) => {
+      const updatedFiles = { ...prevFiles, [fileType]: null };
+      return updatedFiles;
+    });
+
+    // Clear the file input by setting it to null
+    const inputElement = document.getElementById(fileType);
+    if (inputElement) {
+      inputElement.value = null; // Reset the input field
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar /> {/* Use Navbar Component */}
@@ -99,6 +106,7 @@ const Dashboard = () => {
 
           <form onSubmit={handleFileUpload} className="space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Aadhar Card */}
               <div className="space-y-2">
                 <label
                   htmlFor="aadharCard"
@@ -112,8 +120,21 @@ const Dashboard = () => {
                   onChange={(e) => handleFileChange(e, "aadharCard")}
                   className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                {files.aadharCard && (
+                  <div className="flex justify-between items-center mt-2">
+                    <span>{files.aadharCard.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFile("aadharCard")}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <XCircleIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
               </div>
 
+              {/* PAN Card */}
               <div className="space-y-2">
                 <label
                   htmlFor="panCard"
@@ -127,10 +148,23 @@ const Dashboard = () => {
                   onChange={(e) => handleFileChange(e, "panCard")}
                   className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                {files.panCard && (
+                  <div className="flex justify-between items-center mt-2">
+                    <span>{files.panCard.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFile("panCard")}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <XCircleIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Passport */}
               <div className="space-y-2">
                 <label
                   htmlFor="passport"
@@ -144,8 +178,21 @@ const Dashboard = () => {
                   onChange={(e) => handleFileChange(e, "passport")}
                   className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                {files.passport && (
+                  <div className="flex justify-between items-center mt-2">
+                    <span>{files.passport.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFile("passport")}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <XCircleIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
               </div>
 
+              {/* Driver License */}
               <div className="space-y-2">
                 <label
                   htmlFor="driverLicense"
@@ -159,6 +206,18 @@ const Dashboard = () => {
                   onChange={(e) => handleFileChange(e, "driverLicense")}
                   className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                {files.driverLicense && (
+                  <div className="flex justify-between items-center mt-2">
+                    <span>{files.driverLicense.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFile("driverLicense")}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <XCircleIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
