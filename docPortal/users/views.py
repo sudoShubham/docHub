@@ -46,7 +46,7 @@ class DocumentUploadView(APIView):
         service = get_drive_service()  # Get the service object to interact with Google Drive
 
         # Assuming 'root' folder for parent folder (can be customized)
-        parent_folder_id = 'root'  # You can replace this with a specific folder ID if required
+        parent_folder_id = '1FfiXiFcl1RFW_7p_45KBHP8d0LfRWWL6'  # You can replace this with a specific folder ID if required
 
         # Create folder if it doesn't exist (or retrieve existing folder ID if applicable)
         folder_id = get_or_create_folder(service, parent_folder_id, user_folder_name)
