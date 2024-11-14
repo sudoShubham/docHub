@@ -3,6 +3,12 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from rest_framework.permissions import IsAuthenticated
+from .google_drive_service import get_drive_service, get_or_create_folder, upload_file, make_file_public, share_folder_with_email
+
+from rest_framework import status
+from django.contrib.auth import get_user_model
+
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 from .models import User
 
@@ -32,3 +38,32 @@ class LoginView(APIView):
                 })
             return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class DocumentUploadView(APIView):
+    def post(self, request):
+        user_folder_name = f"{request.user.username}"
+        service = get_drive_service()  # Get the service object to interact with Google Drive
+
+        # Assuming 'root' folder for parent folder (can be customized)
+        parent_folder_id = 'root'  # You can replace this with a specific folder ID if required
+
+        # Create folder if it doesn't exist (or retrieve existing folder ID if applicable)
+        folder_id = get_or_create_folder(service, parent_folder_id, user_folder_name)
+
+        # Share the folder with 'dochub.fileserver@gmail.com'
+        try:
+            share_folder_with_email(service, folder_id, 'dochub.fileserver@gmail.com')
+        except Exception as e:
+            print(f"Error sharing folder with dochub.fileserver@gmail.com: {str(e)}")
+            # Optionally, you can return an error response here
+
+        # Upload files and collect their URLs
+        uploaded_files_info = []
+        for file_key, file in request.FILES.items():
+            file_info = upload_file(service, folder_id, file)
+            uploaded_files_info.append(file_info)
+
+        return Response({
+            'uploaded_files': uploaded_files_info
+        })

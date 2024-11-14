@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../components/Navbar"; // Adjust path as necessary
 import axios from "axios";
+import Navbar from "../components/Navbar"; // Adjust path as necessary
 
 const Dashboard = () => {
   const [files, setFiles] = useState({
@@ -44,10 +44,16 @@ const Dashboard = () => {
 
     Object.keys(files).forEach((key) => {
       if (files[key]) {
-        formData.append(key, files[key]);
+        formData.append("files", files[key]);
         isAnyFileSelected = true;
       }
     });
+
+    // Add user details to formData
+    if (userDetails.name && userDetails.email) {
+      formData.append("name", userDetails.name);
+      formData.append("email", userDetails.email);
+    }
 
     // Log the file names of the selected files
     if (isAnyFileSelected) {
@@ -58,13 +64,20 @@ const Dashboard = () => {
       console.log("Selected file names:", fileNames); // Log the file names
 
       try {
-        const response = await axios.post("YOUR_BACKEND_UPLOAD_URL", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const authToken = sessionStorage.getItem("authToken"); // Retrieve auth token from sessionStorage
+        const response = await axios.post(
+          "http://localhost:8000/api/users/upload-documents/",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${authToken}`, // Add authorization header
+            },
+          }
+        );
         alert("Documents uploaded successfully!");
       } catch (error) {
+        console.error("Error uploading documents:", error);
         alert("Error uploading documents. Please try again.");
       }
     } else {
