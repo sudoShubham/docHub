@@ -40,34 +40,6 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-# class DocumentUploadView(APIView):
-#     def post(self, request):
-#         user_folder_name = f"{request.user.username}"
-#         service = get_drive_service()  # Get the service object to interact with Google Drive
-
-#         # Assuming 'root' folder for parent folder (can be customized)
-#         parent_folder_id = '1FfiXiFcl1RFW_7p_45KBHP8d0LfRWWL6'  # You can replace this with a specific folder ID if required
-
-#         # Create folder if it doesn't exist (or retrieve existing folder ID if applicable)
-#         folder_id = get_or_create_folder(service, parent_folder_id, user_folder_name)
-
-#         # Share the folder with 'dochub.fileserver@gmail.com'
-#         try:
-#             share_folder_with_email(service, folder_id, 'dochub.fileserver@gmail.com')
-#         except Exception as e:
-#             print(f"Error sharing folder with dochub.fileserver@gmail.com: {str(e)}")
-#             # Optionally, you can return an error response here
-
-#         # Upload files and collect their URLs
-#         uploaded_files_info = []
-#         for file_key, file in request.FILES.items():
-#             file_info = upload_file(service, folder_id, file)
-#             uploaded_files_info.append(file_info)
-
-#         return Response({
-#             'uploaded_files': uploaded_files_info
-#         })
-
 class DocumentUploadView(APIView):
     def post(self, request):
         user_folder_name = f"{request.user.username}"
@@ -103,8 +75,7 @@ class UserDocumentsView(APIView):
     def get(self, request):
         try:
             # Get user data from the request
-            user_name = request.user.email
-            user_email = request.user.email
+            user_folder_name = f"{request.user.username}"
             
             # Initialize Google Drive service
             service = get_drive_service()
@@ -113,7 +84,7 @@ class UserDocumentsView(APIView):
             waynautic_folder_id = '1FfiXiFcl1RFW_7p_45KBHP8d0LfRWWL6'
 
             # Get or create user folder in the Waynautic folder
-            user_folder_id = get_or_create_folder(service, waynautic_folder_id, user_email)
+            user_folder_id = get_or_create_folder(service, waynautic_folder_id, user_folder_name)
             
             # Fetch the files in the user's folder
             files = list_files_in_folder(service, user_folder_id)

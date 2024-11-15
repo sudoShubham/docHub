@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar"; // Adjust path as necessary
 import { XCircleIcon } from "@heroicons/react/20/solid";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const Dashboard = () => {
   const [files, setFiles] = useState({
@@ -11,10 +12,14 @@ const Dashboard = () => {
     driverLicense: null,
   });
 
+  const [loading, setLoading] = useState(false); // Add loading state
+
   const [userDetails, setUserDetails] = useState({
     name: "",
     email: "",
   });
+
+  const navigate = useNavigate(); // Initialize navigate
 
   // Fetch user data from sessionStorage on component mount
   useEffect(() => {
@@ -37,6 +42,7 @@ const Dashboard = () => {
   };
 
   const handleFileUpload = async (e) => {
+    setLoading(true);
     e.preventDefault();
     const formData = new FormData();
 
@@ -68,7 +74,9 @@ const Dashboard = () => {
             },
           }
         );
-        alert("Documents uploaded successfully!");
+        // alert("Documents uploaded successfully!");
+        setLoading(false);
+        navigate("/my-documents");
       } catch (error) {
         console.error("Error uploading documents:", error);
         alert("Error uploading documents. Please try again.");
@@ -105,121 +113,133 @@ const Dashboard = () => {
           </p>
 
           <form onSubmit={handleFileUpload} className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* Aadhar Card */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="aadharCard"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Aadhar Card
-                </label>
-                <input
-                  type="file"
-                  id="aadharCard"
-                  onChange={(e) => handleFileChange(e, "aadharCard")}
-                  className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {files.aadharCard && (
-                  <div className="flex justify-between items-center mt-2">
-                    <span>{files.aadharCard.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFile("aadharCard")}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <XCircleIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-                )}
-              </div>
+            {loading ? ( // Display spinner if loading
+              <div className="justify-center">
+                <p>Hold on, Your files are getting uploaded.</p>
 
-              {/* PAN Card */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="panCard"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  PAN Card
-                </label>
-                <input
-                  type="file"
-                  id="panCard"
-                  onChange={(e) => handleFileChange(e, "panCard")}
-                  className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {files.panCard && (
-                  <div className="flex justify-between items-center mt-2">
-                    <span>{files.panCard.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFile("panCard")}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <XCircleIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-                )}
+                <div className="flex justify-center items-center my-8">
+                  <div className="loader border-t-4 border-blue-500 w-10 h-10 rounded-full animate-spin"></div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Aadhar Card */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="aadharCard"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Aadhar Card
+                    </label>
+                    <input
+                      type="file"
+                      id="aadharCard"
+                      onChange={(e) => handleFileChange(e, "aadharCard")}
+                      className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {files.aadharCard && (
+                      <div className="flex justify-between items-center mt-2">
+                        <span>{files.aadharCard.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFile("aadharCard")}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <XCircleIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* Passport */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="passport"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Passport
-                </label>
-                <input
-                  type="file"
-                  id="passport"
-                  onChange={(e) => handleFileChange(e, "passport")}
-                  className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {files.passport && (
-                  <div className="flex justify-between items-center mt-2">
-                    <span>{files.passport.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFile("passport")}
-                      className="text-red-600 hover:text-red-800"
+                  {/* PAN Card */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="panCard"
+                      className="block text-sm font-medium text-gray-700"
                     >
-                      <XCircleIcon className="w-5 h-5" />
-                    </button>
+                      PAN Card
+                    </label>
+                    <input
+                      type="file"
+                      id="panCard"
+                      onChange={(e) => handleFileChange(e, "panCard")}
+                      className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {files.panCard && (
+                      <div className="flex justify-between items-center mt-2">
+                        <span>{files.panCard.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFile("panCard")}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <XCircleIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
 
-              {/* Driver License */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="driverLicense"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Driver License
-                </label>
-                <input
-                  type="file"
-                  id="driverLicense"
-                  onChange={(e) => handleFileChange(e, "driverLicense")}
-                  className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {files.driverLicense && (
-                  <div className="flex justify-between items-center mt-2">
-                    <span>{files.driverLicense.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFile("driverLicense")}
-                      className="text-red-600 hover:text-red-800"
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Passport */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="passport"
+                      className="block text-sm font-medium text-gray-700"
                     >
-                      <XCircleIcon className="w-5 h-5" />
-                    </button>
+                      Passport
+                    </label>
+                    <input
+                      type="file"
+                      id="passport"
+                      onChange={(e) => handleFileChange(e, "passport")}
+                      className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {files.passport && (
+                      <div className="flex justify-between items-center mt-2">
+                        <span>{files.passport.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFile("passport")}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <XCircleIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  {/* Driver License */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="driverLicense"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Driver License
+                    </label>
+                    <input
+                      type="file"
+                      id="driverLicense"
+                      onChange={(e) => handleFileChange(e, "driverLicense")}
+                      className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {files.driverLicense && (
+                      <div className="flex justify-between items-center mt-2">
+                        <span>{files.driverLicense.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFile("driverLicense")}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <XCircleIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
             <button
               type="submit"
