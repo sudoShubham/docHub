@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../components/Navbar"; // Adjust path as necessary
+import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";
+import ChangePassword from "../components/ChangePassword";
 
 const MyProfile = () => {
   const [userDetails, setUserDetails] = useState({
     name: "",
     email: "",
   });
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
-  // Fetch user data from sessionStorage on component mount
   useEffect(() => {
     const storedUser = sessionStorage.getItem("userDetails");
     if (storedUser) {
@@ -20,13 +21,16 @@ const MyProfile = () => {
     }
   }, []);
 
-  const handleChangePassword = () => {
-    alert("Redirecting to change password page...");
-    // Implement redirection to the change password page here
+  const handleOpenChangePassword = () => {
+    setIsChangePasswordOpen(true);
+  };
+
+  const handleCloseChangePassword = () => {
+    setIsChangePasswordOpen(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-white-100">
       <Navbar />
       <div className="pt-20 px-6 sm:px-12 lg:px-32">
         <div className="bg-white p-10 rounded-2xl shadow-xl mx-auto max-w-3xl">
@@ -51,7 +55,7 @@ const MyProfile = () => {
 
           <div className="mt-8 flex justify-center">
             <button
-              onClick={handleChangePassword}
+              onClick={handleOpenChangePassword}
               className="py-3 px-6 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Change Password
@@ -68,6 +72,11 @@ const MyProfile = () => {
           </div>
         </div>
       </div>
+
+      <ChangePassword
+        isOpen={isChangePasswordOpen}
+        onClose={handleCloseChangePassword}
+      />
     </div>
   );
 };

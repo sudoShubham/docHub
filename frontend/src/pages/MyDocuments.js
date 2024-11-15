@@ -73,10 +73,10 @@ const MyDocuments = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-white-100">
       <Navbar />
       <div className="pt-20 px-8">
-        <div className="bg-white p-8 rounded-2xl shadow-lg w-full sm:w-10/12 lg:w-3/4 mx-auto">
+        <div className="bg-white p-8 rounded-2xl  w-full sm:w-10/12 lg:w-3/4 mx-auto">
           <h2 className="text-4xl font-semibold text-center text-gray-800 mb-8">
             {userDetails.name}'s Documents
           </h2>
@@ -95,7 +95,7 @@ const MyDocuments = () => {
                 documents.map((doc) => (
                   <div
                     key={doc.id}
-                    className="bg-gray-50 rounded-lg shadow-lg p-6 transition-transform transform hover:scale-105 hover:shadow-2xl"
+                    className="bg-gray-100 rounded-lg shadow-lg p-6 transition-transform transform hover:scale-105 hover:shadow-2xl"
                   >
                     <div className="flex items-center justify-between">
                       <div>

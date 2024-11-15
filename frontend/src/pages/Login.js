@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import CompanyLogo from "../images/Waynautic.png";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -31,9 +32,17 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-400 to-green-200 p-4">
       <div className="bg-white p-10 rounded-lg shadow-2xl w-full max-w-md">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-          Welcome Back
-        </h2>
+        {/* Center the logo */}
+        <div className="flex justify-center mb-6">
+          <Link
+            to="https://waynautic.com/"
+            className="items-center space-x-2 ml-12"
+            target="_blank"
+          >
+            <img src={CompanyLogo} alt="Company Logo" className="h-10" />
+          </Link>
+        </div>
+
         <p className="text-center text-gray-500 mb-8">
           Please login to your account
         </p>
