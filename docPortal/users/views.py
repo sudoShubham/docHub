@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from rest_framework.permissions import IsAuthenticated
-from .google_drive_service import get_drive_service, get_or_create_folder, upload_file_with_versioning, share_folder_with_email
+from .google_drive_service import get_drive_service, get_or_create_folder, upload_file_with_versioning, share_folder_with_email, list_files_in_folder
 
 from rest_framework import status
 from django.contrib.auth import get_user_model
@@ -95,3 +95,41 @@ class DocumentUploadView(APIView):
         return Response({
             'uploaded_files': uploaded_files_info
         })
+    
+
+class UserDocumentsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Get user data from the request
+            user_name = request.user.email
+            user_email = request.user.email
+            
+            # Initialize Google Drive service
+            service = get_drive_service()
+
+            # Waynautic folder ID (This should be the parent folder where user folders are stored)
+            waynautic_folder_id = '1FfiXiFcl1RFW_7p_45KBHP8d0LfRWWL6'
+
+            # Get or create user folder in the Waynautic folder
+            user_folder_id = get_or_create_folder(service, waynautic_folder_id, user_email)
+            
+            # Fetch the files in the user's folder
+            files = list_files_in_folder(service, user_folder_id)
+            
+            # Prepare response data
+            file_data = [
+                {
+                    'file_id': file['id'],
+                    'file_name': file['name'],
+                    'file_type': file['mimeType'],
+                    'file_url': file['webViewLink']
+                }
+                for file in files
+            ]
+            
+            return Response({'documents': file_data})
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)

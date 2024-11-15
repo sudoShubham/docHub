@@ -1,37 +1,15 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../components/Navbar"; // Adjust path if necessary
-import { FaUpload, FaFileAlt } from "react-icons/fa"; // Icon library for buttons
+import Navbar from "../components/Navbar";
+import { FaUpload, FaFileAlt } from "react-icons/fa";
+import axios from "axios";
 
 const MyDocuments = () => {
-  // Dummy data for uploaded files (replace with actual data from backend)
-  const [documents, setDocuments] = useState([
-    {
-      id: 1,
-      name: "Aadhar Card",
-      type: "PDF",
-      uploadedOn: "2024-11-13",
-      fileUrl: "#",
-    },
-    {
-      id: 2,
-      name: "PAN Card",
-      type: "JPG",
-      uploadedOn: "2024-11-10",
-      fileUrl: "#",
-    },
-    {
-      id: 3,
-      name: "Passport",
-      type: "PDF",
-      uploadedOn: "2024-11-05",
-      fileUrl: "#",
-    },
-  ]);
-
+  const [documents, setDocuments] = useState([]);
   const [userDetails, setUserDetails] = useState({
     name: "",
     email: "",
   });
+
   // Fetch user data from sessionStorage on component mount
   useEffect(() => {
     const storedUser = sessionStorage.getItem("userDetails");
@@ -44,16 +22,34 @@ const MyDocuments = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:8000/api/users/documents/",
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+            },
+          }
+        );
+        setDocuments(response.data.documents);
+      } catch (error) {
+        console.error("Error fetching documents:", error);
+      }
+    };
+    fetchDocuments();
+  }, []);
+
   const handleFileChange = (e, docId) => {
     const updatedDocs = documents.map((doc) => {
       if (doc.id === docId) {
-        // Update the document's file information here
         const newFile = e.target.files[0];
         return {
           ...doc,
           name: newFile.name,
           type: newFile.type,
-          fileUrl: URL.createObjectURL(newFile), // For demo purpose, this generates a local URL
+          fileUrl: URL.createObjectURL(newFile), // For demo purpose
         };
       }
       return doc;
@@ -61,15 +57,9 @@ const MyDocuments = () => {
     setDocuments(updatedDocs);
   };
 
-  // Use this effect to fetch the actual data from the backend later
-  useEffect(() => {
-    // Example:
-    // axios.get("/api/documents").then(response => setDocuments(response.data));
-  }, []);
-
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar /> {/* Use Navbar component */}
+      <Navbar />
       <div className="pt-20 px-8">
         <div className="bg-white p-8 rounded-2xl shadow-lg w-full sm:w-10/12 lg:w-3/4 mx-auto">
           <h2 className="text-4xl font-semibold text-center text-gray-800 mb-8">
@@ -90,16 +80,15 @@ const MyDocuments = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xl font-medium text-gray-700">
-                        {doc.name}
+                        {doc.file_name}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {doc.type} | Uploaded on: {doc.uploadedOn}
+                        {doc.file_type} | Uploaded on: {doc.uploadedOn}
                       </p>
                     </div>
                     <div>
-                      {/* View Button */}
                       <a
-                        href={doc.fileUrl}
+                        href={doc.file_url}
                         className="text-blue-500 hover:text-blue-700 text-xl"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -109,14 +98,13 @@ const MyDocuments = () => {
                     </div>
                   </div>
 
-                  {/* Re-upload Button */}
                   <div className="mt-4">
                     <label className="text-sm text-blue-500 font-semibold cursor-pointer hover:text-blue-700">
                       <input
                         type="file"
                         className="hidden"
                         accept="application/pdf,image/*"
-                        onChange={(e) => handleFileChange(e, doc.id)} // Handle file change
+                        onChange={(e) => handleFileChange(e, doc.id)}
                       />
                       <div className="flex items-center justify-center space-x-2">
                         <FaUpload />

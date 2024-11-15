@@ -6,17 +6,6 @@ from rest_framework.response import Response
 
 from googleapiclient.http import MediaInMemoryUpload, MediaFileUpload
 
-def make_file_public(service, file_id):
-    """Makes the file public for anyone with the link."""
-    permission = {
-        'type': 'anyone',
-        'role': 'reader',  # This makes the file accessible to anyone with the link
-    }
-    try:
-        service.permissions().create(fileId=file_id, body=permission).execute()
-        print(f"File with ID {file_id} is now publicly accessible.")
-    except Exception as e:
-        print(f"Error making file public: {e}")
 
 
 # Initialize the Google Drive service
@@ -71,79 +60,7 @@ def create_user_folder(service, parent_folder_id, user_name, user_email):
     print(f"Folder created for user: {user_name} ({user_email})")
     return folder.get('id')
 
-# Upload a file to the specified folder
-def upload_file(service, folder_id, file):
-    """Uploads a file to the specified folder and makes it public."""
-    file_content = io.BytesIO(file.read())  # Read file content into memory
-    media = MediaIoBaseUpload(file_content, mimetype=file.content_type)
 
-    file_metadata = {
-        'name': file.name,
-        'parents': [folder_id],  # Ensure the file is uploaded to the correct folder
-    }
-
-    try:
-        # Upload the file to Google Drive
-        file_info = service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
-
-        # Add permission to make the file publicly accessible
-        permission = {
-            'type': 'anyone',
-            'role': 'reader',  # Can view the file
-        }
-        service.permissions().create(fileId=file_info['id'], body=permission).execute()
-
-        print(f"File uploaded successfully: {file_info['webViewLink']}")
-        return {
-            'file_id': file_info['id'],
-            'file_url': file_info['webViewLink']
-        }
-
-     
-
-    except Exception as e:
-        print(f"Error uploading file: {e}")
-        return None
-
-# Function to handle the document upload
-def upload_documents(request):
-    # Assuming request contains the user data (name, email) and the files
-    user_name = request.user.name
-    user_email = request.user.email
-    service = get_drive_service()  # Get Google Drive API service
-
-    # Waynautic folder ID (Replace this with the actual folder ID of the Waynautic folder)
-    waynautic_folder_id = 'YOUR_WAYNAUTIC_FOLDER_ID'
-
-    # Create or find the user's folder inside Waynautic folder
-    user_folder_id = create_user_folder(service, waynautic_folder_id, user_name, user_email)
-    
-    # Upload files to the user's folder
-    uploaded_files_info = []
-    for file_key, file in request.FILES.items():
-        file_url, file_id = upload_file(service, user_folder_id, file)
-        uploaded_files_info.append({
-            'file_name': file.name,
-            'file_url': file_url,
-            'file_id': file_id
-        })
-    
-    # Return uploaded file details
-    return Response({
-        'uploaded_files': uploaded_files_info
-    })
-
-def make_folder_accessible_to_email(service, folder_id, email):
-    permission = {
-        'type': 'user',
-        'role': 'reader',
-        'emailAddress': email,
-    }
-    try:
-        service.permissions().create(fileId=folder_id, body=permission).execute()
-        print(f"Folder {folder_id} is now shared with {email}.")
-    except Exception as e:
-        print(f"Error sharing folder with {email}: {e}")
 
 
 def share_folder_with_email(service, folder_id, email):
@@ -210,3 +127,13 @@ def upload_file_with_versioning(service, folder_id, file):
     }
     print(f"File uploaded successfully: {file_info['webViewLink']}")
     return file_info
+
+
+# Function to list files in a specific Google Drive folder
+def list_files_in_folder(service, folder_id):
+    """Lists files in a specified folder on Google Drive."""
+    query = f"'{folder_id}' in parents and trashed=false"
+    results = service.files().list(q=query, fields="files(id, name, mimeType, webViewLink)").execute()
+    files = results.get('files', [])
+    
+    return files
