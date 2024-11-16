@@ -45,13 +45,13 @@ const MyDocuments = () => {
     if (!newFile) return;
 
     // Find the document being re-uploaded by matching docId
-    const documentToUpdate = documents.find((doc) => doc.id === docId);
+    const documentToUpdate = documents.find((doc) => doc.file_id === docId);
     console.log(documentToUpdate);
 
     // Trim the existing file name to remove everything after the first underscore
     const trimmedFileName = documentToUpdate.file_name.split("_")[0];
 
-    console.log(trimmedFileName);
+    console.log(documents, docId);
 
     // Create a new FormData object and append the renamed file with its original content
     const formData = new FormData();
@@ -107,7 +107,7 @@ const MyDocuments = () => {
               {documents.length > 0 ? (
                 documents.map((doc) => (
                   <div
-                    key={doc.id}
+                    key={doc.file_id}
                     className="bg-gray-100 rounded-lg shadow-lg p-6 transition-transform transform hover:scale-105 hover:shadow-2xl"
                   >
                     <div className="flex items-center justify-between">
@@ -135,7 +135,7 @@ const MyDocuments = () => {
                           type="file"
                           className="hidden"
                           accept="application/pdf,image/*"
-                          onChange={(e) => handleFileChange(e, doc.id)}
+                          onChange={(e) => handleFileChange(e, doc.file_id)}
                         />
                         <div className="flex items-center justify-center space-x-2">
                           <FaUpload />
