@@ -5,6 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
 from rest_framework.permissions import IsAuthenticated
+from googleapiclient.errors import HttpError
 from .google_drive_service import get_drive_service, get_or_create_folder, upload_file_with_versioning, share_folder_with_email, list_files_in_folder
 
 from rest_framework import status
@@ -226,3 +227,59 @@ class AllUserDocumentsView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+def list_files_in_folder(service, folder_id):
+    """
+    List all files in a specific folder in Google Drive.
+
+    Args:
+        service: Google Drive service instance.
+        folder_id: ID of the folder to list files from.
+
+    Returns:
+        List of file metadata dictionaries.
+    """
+    try:
+        query = f"'{folder_id}' in parents and trashed = false"
+        results = service.files().list(
+            q=query,
+            fields="files(id, name, mimeType, webViewLink)"
+        ).execute()
+        return results.get('files', [])
+    except HttpError as e:
+        raise Exception(f"Error fetching files from folder: {str(e)}")
+
+
+class FolderDocumentsView(APIView):
+    """
+    API to fetch all documents from a specific Google Drive folder.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Fixed folder ID for the Google Drive folder
+            folder_id = "1C86ece0khaipNvwOObBNbLDvlKbVvfhI"
+
+            # Initialize Google Drive service
+            service = get_drive_service()
+
+            # Fetch files from the specified folder
+            files = list_files_in_folder(service, folder_id)
+
+            # Prepare response data
+            file_data = [
+                {
+                    'file_id': file['id'],
+                    'file_name': file['name'],
+                    'file_type': file['mimeType'],
+                    'file_url': file['webViewLink']
+                }
+                for file in files
+            ]
+
+            return Response({'documents': file_data})
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
