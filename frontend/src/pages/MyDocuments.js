@@ -44,11 +44,14 @@ const MyDocuments = () => {
     const newFile = e.target.files[0];
     if (!newFile) return;
 
+    // Find the document being re-uploaded by matching docId
+    const documentToUpdate = documents.find((doc) => doc.id === docId);
+    console.log(documentToUpdate);
+
     // Trim the existing file name to remove everything after the first underscore
-    const existingFileName = documents.find(
-      (doc) => doc.id === docId
-    ).file_name;
-    const trimmedFileName = existingFileName.split("_")[0];
+    const trimmedFileName = documentToUpdate.file_name.split("_")[0];
+
+    console.log(trimmedFileName);
 
     // Create a new FormData object and append the renamed file with its original content
     const formData = new FormData();
@@ -82,7 +85,6 @@ const MyDocuments = () => {
       setLoading(false); // Hide spinner
     }
   };
-
   return (
     <div className="min-h-screen bg-white-100">
       <Navbar />
