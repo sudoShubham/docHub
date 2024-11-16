@@ -322,7 +322,10 @@ const Dashboard = () => {
   };
 
   const handleAddField = () => {
-    setFieldNames([...fieldNames, "New Document"]);
+    // Only add a new field if there are no ongoing edits
+    if (editingFieldIndex === null) {
+      setFieldNames([...fieldNames, "New Document"]);
+    }
   };
 
   const handleEditFieldName = (index) => {
@@ -332,7 +335,7 @@ const Dashboard = () => {
 
   const handleSaveFieldName = (index) => {
     const updatedFieldNames = [...fieldNames];
-    updatedFieldNames[index] = newFieldName;
+    updatedFieldNames[index] = newFieldName || "New Document"; // Fallback to "New Document" if newFieldName is empty
     setFieldNames(updatedFieldNames);
     setEditingFieldIndex(null);
   };
