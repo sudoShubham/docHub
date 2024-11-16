@@ -99,7 +99,7 @@ const Agreements = () => {
       <div className="pt-20 px-8">
         <div className="bg-white p-8 rounded-2xl shadow-lg w-full sm:w-10/12 lg:w-3/4 mx-auto">
           <h2 className="text-4xl font-semibold text-center text-gray-800 mb-8">
-            {userDetails.name}'s Agreements
+            Download Agreements
           </h2>
           <p className="text-center text-gray-600 mb-8">
             Here are the agreements available for download and re-upload after
