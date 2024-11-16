@@ -40,12 +40,55 @@ const MyDocuments = () => {
     fetchDocuments();
   }, []);
 
+  //   const handleFileChange = async (e, docId) => {
+  //     const newFile = e.target.files[0];
+  //     if (!newFile) return;
+
+  //     const formData = new FormData();
+  //     formData.append("file", newFile);
+
+  //     try {
+  //       setLoading(true); // Show spinner
+  //       const authToken = sessionStorage.getItem("authToken");
+  //       await axios.post(
+  //         "http://localhost:8000/api/users/upload-documents/",
+  //         formData,
+  //         {
+  //           headers: {
+  //             "Content-Type": "multipart/form-data",
+  //             Authorization: `Bearer ${authToken}`,
+  //           },
+  //         }
+  //       );
+
+  //       fetchDocuments(); // Update document list after successful upload
+  //     } catch (error) {
+  //       console.error("Error re-uploading file:", error);
+  //       alert("Failed to re-upload file. Please try again.");
+  //     } finally {
+  //       setLoading(false); // Hide spinner
+  //     }
+  //   };
+
   const handleFileChange = async (e, docId) => {
     const newFile = e.target.files[0];
     if (!newFile) return;
 
+    // Trim the existing file name to remove everything after the first underscore
+    const existingFileName = documents.find(
+      (doc) => doc.id === docId
+    ).file_name;
+    const trimmedFileName = existingFileName.split("_")[0];
+
+    // Create a new FormData object and append the renamed file with its original content
     const formData = new FormData();
-    formData.append("file", newFile);
+    formData.append(
+      "file",
+      newFile,
+      `${trimmedFileName}${newFile.name.substring(
+        newFile.name.lastIndexOf(".")
+      )}`
+    );
 
     try {
       setLoading(true); // Show spinner
