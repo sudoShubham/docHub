@@ -202,7 +202,7 @@ const Login = () => {
             Login
           </button>
         </form>
-        <div className="mt-6 text-center">
+        {/* <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
             Forgot your password?{" "}
             <Link
@@ -212,7 +212,7 @@ const Login = () => {
               Click here
             </Link>
           </p>
-        </div>
+        </div> */}
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-500">
             Don’t have an account?{" "}

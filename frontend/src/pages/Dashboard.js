@@ -90,7 +90,7 @@ const Dashboard = () => {
       <div className="container mx-auto pt-20 px-6 sm:px-12 lg:px-32">
         <div className="bg-white p-10 rounded-2xl max-w-3xl mx-auto">
           <h2 className="text-3xl font-semibold text-center text-gray-800 mb-4">
-            Welcome {userDetails.name}, Upload Your Documents
+            Welcome {userDetails.name}!
           </h2>
           <p className="text-center text-gray-500 mb-6">
             Please upload your important documents to complete your profile.
