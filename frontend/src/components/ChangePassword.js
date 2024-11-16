@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 const ChangePassword = ({ isOpen, onClose }) => {
   const [oldPassword, setOldPassword] = useState("");
@@ -21,7 +22,7 @@ const ChangePassword = ({ isOpen, onClose }) => {
     try {
       const token = sessionStorage.getItem("authToken");
       const response = await axios.put(
-        "http://127.0.0.1:8000/api/users/update-password/",
+        `${API_BASE_URL}/api/users/update-password/`,
         {
           old_password: oldPassword,
           new_password: newPassword,

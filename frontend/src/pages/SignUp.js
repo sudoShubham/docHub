@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Make sure this is imported
 import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 
 const SignUp = () => {
   const [firstName, setFirstName] = useState("");
@@ -35,7 +36,7 @@ const SignUp = () => {
 
     // Call the API for sign up
     axios
-      .post("http://localhost:8000/api/users/register/", payload, {
+      .post(`${API_BASE_URL}/api/users/register/`, payload, {
         headers: {
           "Content-Type": "application/json",
         },

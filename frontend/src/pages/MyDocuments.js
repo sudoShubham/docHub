@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { FaUpload, FaFileAlt } from "react-icons/fa";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 const MyDocuments = () => {
   const [documents, setDocuments] = useState([]);
@@ -13,14 +14,11 @@ const MyDocuments = () => {
 
   const fetchDocuments = async () => {
     try {
-      const response = await axios.get(
-        "http://127.0.0.1:8000/api/users/documents/",
-        {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
-          },
-        }
-      );
+      const response = await axios.get(`${API_BASE_URL}/api/users/documents/`, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+        },
+      });
       setDocuments(response.data.documents);
     } catch (error) {
       console.error("Error fetching documents:", error);

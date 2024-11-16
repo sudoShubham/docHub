@@ -3,6 +3,7 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 import { XCircleIcon } from "@heroicons/react/20/solid";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 
 const Dashboard = () => {
   const [files, setFiles] = useState({
@@ -56,7 +57,7 @@ const Dashboard = () => {
     try {
       const authToken = sessionStorage.getItem("authToken");
       const response = await axios.post(
-        "http://localhost:8000/api/users/upload-documents/",
+        `${API_BASE_URL}/api/users/upload-documents/`,
         formData,
         {
           headers: {

@@ -7,6 +7,8 @@ import MyDocuments from "./pages/MyDocuments";
 import MyProfile from "./pages/MyProfile";
 import Agreements from "./pages/Agreements";
 import PrivateRoute from "./components/PrivateRoute"; // Import PrivateRoute component
+import AdminPage from "./pages/AdminPage";
+import AdminDocumentsPage from "./pages/AdminDocumentsPage";
 
 const App = () => {
   return (
@@ -33,6 +35,13 @@ const App = () => {
         <Route
           path="/agreements"
           element={<PrivateRoute element={Agreements} />}
+        />
+
+        <Route path="/admin" element={<PrivateRoute element={AdminPage} />} />
+
+        <Route
+          path="/admin-documents"
+          element={<PrivateRoute element={AdminDocumentsPage} />}
         />
       </Routes>
     </Router>
