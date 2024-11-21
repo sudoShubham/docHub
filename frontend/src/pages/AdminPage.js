@@ -5,8 +5,12 @@ import Navbar from "../components/Navbar";
 const AdminPage = () => {
   const navigate = useNavigate();
 
-  const handleClick = () => {
+  const handleClickViewFiles = () => {
     navigate("/admin-documents"); // Navigate to AdminDocumentsPage
+  };
+
+  const handleClickAddUser = () => {
+    navigate("/signup"); // Navigate to the Signup page
   };
 
   return (
@@ -21,12 +25,21 @@ const AdminPage = () => {
             Welcome to the Admin Dashboard. You can manage and view all user
             document files here.
           </p>
-          <div className="flex justify-center">
+          <div className="flex justify-center space-x-4">
+            {/* Button to View Users' Files */}
             <button
-              onClick={handleClick}
+              onClick={handleClickViewFiles}
               className="bg-blue-600 text-white text-lg py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transform transition-all duration-300 ease-in-out hover:scale-105"
             >
               View Users' Files
+            </button>
+
+            {/* Button to Add New User */}
+            <button
+              onClick={handleClickAddUser}
+              className="bg-green-600 text-white text-lg py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transform transition-all duration-300 ease-in-out hover:scale-105"
+            >
+              Add New User
             </button>
           </div>
         </div>

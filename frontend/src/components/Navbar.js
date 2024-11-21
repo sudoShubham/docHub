@@ -51,8 +51,11 @@ const Navbar = () => {
 
         {/* Navigation links for desktop */}
         <div className="hidden lg:flex space-x-6">
+          <Link to="/home" className="text-black hover:text-blue-600 py-2">
+            Home
+          </Link>
           <Link to="/dashboard" className="text-black hover:text-blue-600 py-2">
-            Dashboard
+            Upload Documents
           </Link>
           <Link
             to="/my-documents"
@@ -82,7 +85,7 @@ const Navbar = () => {
           )}
           <button
             onClick={handleSignOut}
-            className="text-black hover:text-blue-600 py-2"
+            className="text-black hover:text-red-600 py-2"
           >
             Sign Out
           </button>
@@ -93,12 +96,15 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="lg:hidden bg-gray-50 shadow-inner">
           <div className="flex flex-col items-start space-y-2 p-4">
+            <Link to="/home" className="text-black hover:text-blue-600 py-2">
+              Home
+            </Link>
             <Link
               to="/dashboard"
               className="text-black hover:text-blue-600 w-full text-left py-2"
               onClick={() => setIsMenuOpen(false)}
             >
-              Dashboard
+              Upload Documents
             </Link>
             <Link
               to="/my-documents"
@@ -135,7 +141,7 @@ const Navbar = () => {
                 handleSignOut();
                 setIsMenuOpen(false);
               }}
-              className="text-black hover:text-blue-600 w-full text-left py-2"
+              className="text-black hover:text-red-600 w-full text-left py-2"
             >
               Sign Out
             </button>

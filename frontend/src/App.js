@@ -9,6 +9,7 @@ import Agreements from "./pages/Agreements";
 import PrivateRoute from "./components/PrivateRoute"; // Import PrivateRoute component
 import AdminPage from "./pages/AdminPage";
 import AdminDocumentsPage from "./pages/AdminDocumentsPage";
+import Home from "./pages/Home";
 
 const App = () => {
   return (
@@ -43,6 +44,8 @@ const App = () => {
           path="/admin-documents"
           element={<PrivateRoute element={AdminDocumentsPage} />}
         />
+
+        <Route path="/home" element={<PrivateRoute element={Home} />} />
       </Routes>
     </Router>
   );
