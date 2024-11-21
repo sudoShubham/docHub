@@ -262,7 +262,7 @@ const MyProfile = () => {
 
         {/* Profile Details */}
         <div className="lg:w-3/4 bg-white shadow-md p-4 rounded-lg">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-sky-400 inline-block">
             {activeSection} Details
           </h2>
 
