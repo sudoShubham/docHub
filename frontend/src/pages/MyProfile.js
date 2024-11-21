@@ -36,6 +36,10 @@ const MyProfile = () => {
   const [isEditing, setIsEditing] = useState(false); // Track editing state
   const navigate = useNavigate();
 
+  const genderOptions = ["Male", "Female", "Other"]; // Gender dropdown options
+  const maritalStatusOptions = ["Single", "Married", "Divorced", "Widowed"]; // Marital status dropdown options
+  const bloodGroupOptions = ["A+", "B+", "O+", "AB+", "A-", "B-", "O-", "AB-"];
+
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
@@ -263,6 +267,7 @@ const MyProfile = () => {
           </h2>
 
           {/* Collapsible Section */}
+          {/* Collapsible Section */}
           <div className="space-y-4">
             {groupedDetails[activeSection] &&
               Object.entries(groupedDetails[activeSection]).map(
@@ -276,16 +281,62 @@ const MyProfile = () => {
                     </label>
                     <div className="w-full sm:w-2/3">
                       {isEditing && EditableFields.includes(key) ? (
-                        <input
-                          type="text"
-                          value={value}
-                          onChange={(e) => handleInputChange(e, key)}
-                          className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300"
-                        />
+                        key === "gender" ? (
+                          <select
+                            value={value}
+                            onChange={(e) => handleInputChange(e, key)}
+                            className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300"
+                          >
+                            <option value="">Select Gender</option>
+                            {genderOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        ) : key === "date_of_birth" ? (
+                          <input
+                            type="date"
+                            value={value}
+                            onChange={(e) => handleInputChange(e, key)}
+                            className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300"
+                          />
+                        ) : key === "marital_status" ? (
+                          <select
+                            value={value}
+                            onChange={(e) => handleInputChange(e, key)}
+                            className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300"
+                          >
+                            <option value="">Select Marital Status</option>
+                            {maritalStatusOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        ) : key === "blood_group" ? (
+                          <select
+                            value={value}
+                            onChange={(e) => handleInputChange(e, key)}
+                            className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300"
+                          >
+                            <option value="">Select Blood Group</option>
+                            {bloodGroupOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            value={value}
+                            onChange={(e) => handleInputChange(e, key)}
+                            className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300"
+                          />
+                        )
                       ) : (
-                        <p className="text-gray-700">
-                          {value || "Not available"}
-                        </p>
+                        <p className="text-gray-600">{value || "N/A"}</p>
                       )}
                     </div>
                   </div>
@@ -293,12 +344,12 @@ const MyProfile = () => {
               )}
           </div>
 
-          {/* Save Button */}
+          {/* Save Changes */}
           {isEditing && (
-            <div className="mt-6 sticky bottom-4 flex justify-end">
+            <div className="flex justify-end mt-4">
               <button
                 onClick={handleSave}
-                className="py-2 px-6 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+                className="py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 Save Changes
               </button>
