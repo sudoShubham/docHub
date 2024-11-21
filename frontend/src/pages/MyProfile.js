@@ -11,7 +11,7 @@ const EditableFields = [
   "current_address",
   "permanent_address",
   "mobile_number",
-  "emergency_contact_name",
+  "emergency_contact_person",
   "emergency_contact_number",
   "gender",
   "country_of_birth",
@@ -215,13 +215,13 @@ const MyProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-100">
       <Navbar />
 
-      {/* Change Password Button placed below Navbar */}
-      <div className="mt-6 flex justify-end gap-4 px-4">
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-4 px-4 mt-4">
         <button
-          onClick={() => setIsEditing(!isEditing)} // Toggle edit mode
+          onClick={() => setIsEditing(!isEditing)}
           className="py-2 px-4 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
         >
           {isEditing ? "Cancel" : "Edit Profile"}
@@ -235,20 +235,18 @@ const MyProfile = () => {
         </button>
       </div>
 
-      <div className="flex pt-8 flex-col lg:flex-row">
-        {/* Left Panel for navigation */}
-        <div className="lg:w-1/4 bg-white  p-4 rounded-lg mb-4 lg:mb-0">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">
-            Profile Sections
-          </h2>
-          <ul className="space-y-4">
+      <div className="flex flex-col lg:flex-row pt-4">
+        {/* Left Navigation */}
+        <div className="lg:w-1/4 bg-white shadow-sm p-4 rounded-lg mb-4 lg:mb-0">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Sections</h2>
+          <ul className="space-y-2">
             {Object.keys(groupedDetails).map((section) => (
               <li
                 key={section}
-                className={`cursor-pointer text-lg font-medium ${
+                className={`cursor-pointer text-md font-medium ${
                   activeSection === section
-                    ? "text-black-600 bg-sky-400 p-2 rounded-md"
-                    : "text-gray-600 hover:text-blue-500"
+                    ? "bg-blue-100 text-blue-600 rounded-md p-2"
+                    : "text-gray-700 hover:bg-gray-200 rounded-md p-2"
                 }`}
                 onClick={() => handleSectionClick(section)}
               >
@@ -258,31 +256,36 @@ const MyProfile = () => {
           </ul>
         </div>
 
-        {/* Right Panel for displaying profile details */}
-        <div className="lg:w-3/4 bg-white shadow-lg p-6 rounded-lg">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            My Profile
+        {/* Profile Details */}
+        <div className="lg:w-3/4 bg-white shadow-md p-4 rounded-lg">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            {activeSection} Details
           </h2>
 
-          {/* Dynamic Section Rendering */}
-          <div className="space-y-6">
+          {/* Collapsible Section */}
+          <div className="space-y-4">
             {groupedDetails[activeSection] &&
               Object.entries(groupedDetails[activeSection]).map(
                 ([key, value]) => (
-                  <div key={key} className="flex justify-between items-center">
-                    <div className="font-medium text-gray-700 capitalize w-1/3">
+                  <div
+                    key={key}
+                    className="flex flex-col sm:flex-row items-start sm:items-center"
+                  >
+                    <label className="w-full sm:w-1/3 text-gray-700 font-medium capitalize mb-2 sm:mb-0">
                       {key.replaceAll("_", " ")}
-                    </div>
-                    <div className="w-2/3">
+                    </label>
+                    <div className="w-full sm:w-2/3">
                       {isEditing && EditableFields.includes(key) ? (
                         <input
                           type="text"
                           value={value}
                           onChange={(e) => handleInputChange(e, key)}
-                          className="text-gray-700 border-2 border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300"
                         />
                       ) : (
-                        <span>{value || "Not available"}</span>
+                        <p className="text-gray-700">
+                          {value || "Not available"}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -290,8 +293,9 @@ const MyProfile = () => {
               )}
           </div>
 
+          {/* Save Button */}
           {isEditing && (
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 sticky bottom-4 flex justify-end">
               <button
                 onClick={handleSave}
                 className="py-2 px-6 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
