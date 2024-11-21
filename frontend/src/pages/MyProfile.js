@@ -229,7 +229,7 @@ const MyProfile = () => {
 
         <button
           onClick={toggleChangePasswordModal}
-          className="py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="py-2 px-4 bg-sky-400 text-black font-medium rounded-lg hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           Change Password
         </button>
@@ -247,8 +247,8 @@ const MyProfile = () => {
                 key={section}
                 className={`cursor-pointer text-lg font-medium ${
                   activeSection === section
-                    ? "text-blue-600 bg-blue-100 p-2 rounded-md"
-                    : "text-gray-600 hover:text-blue-600"
+                    ? "text-black-600 bg-sky-400 p-2 rounded-md"
+                    : "text-gray-600 hover:text-blue-500"
                 }`}
                 onClick={() => handleSectionClick(section)}
               >
