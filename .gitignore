@@ -54,7 +54,7 @@ cover/
 # Translations
 *.mo
 *.pot
-
+lively-tensor-441706-h2-d8c7c64a6f3c.json
 # Django stuff:
 *.log
 local_settings.py
