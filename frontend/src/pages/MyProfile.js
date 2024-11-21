@@ -219,7 +219,7 @@ const MyProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       <Navbar />
 
       {/* Action Buttons */}
@@ -241,7 +241,7 @@ const MyProfile = () => {
 
       <div className="flex flex-col lg:flex-row pt-4">
         {/* Left Navigation */}
-        <div className="lg:w-1/4 bg-white shadow-sm p-4 rounded-lg mb-4 lg:mb-0">
+        <div className="lg:w-1/4 bg-white p-4 rounded-lg mb-4 lg:mb-0">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Sections</h2>
           <ul className="space-y-2">
             {Object.keys(groupedDetails).map((section) => (

@@ -10,6 +10,7 @@ import PrivateRoute from "./components/PrivateRoute"; // Import PrivateRoute com
 import AdminPage from "./pages/AdminPage";
 import AdminDocumentsPage from "./pages/AdminDocumentsPage";
 import Home from "./pages/Home";
+import AllUsersPage from "./pages/AllUsersPage";
 
 const App = () => {
   return (
@@ -46,6 +47,10 @@ const App = () => {
         />
 
         <Route path="/home" element={<PrivateRoute element={Home} />} />
+        <Route
+          path="/all-users"
+          element={<PrivateRoute element={AllUsersPage} />}
+        />
       </Routes>
     </Router>
   );

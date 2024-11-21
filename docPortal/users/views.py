@@ -367,3 +367,74 @@ class UpdateUserDetailsView(APIView):
             return Response({"message": "User details updated successfully."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "No changes detected."}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class AllUserDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Check if the logged-in user is an admin
+        if not request.user.is_staff:
+            return Response(
+                {"error": "You do not have permission to access this resource."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            # Get all users
+            users = get_user_model().objects.all()
+
+            # Initialize the response data structure
+            all_user_details = []
+
+            for user in users:
+                # Get the related UserDetails for each user
+                user_details = UserDetails.objects.filter(user=user).first()
+
+                if not user_details:
+                    continue
+
+                # Add user and user_details to the response
+                all_user_details.append({
+                    'user': {
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
+                        'username': user.username,
+                        'is_staff': user.is_staff,
+                        'is_superuser': user.is_superuser,
+                    },
+                    'details': {
+                        'employee_id': user_details.employee_id,
+                        'personal_email': user_details.personal_email,
+                        'blood_group': user_details.blood_group,
+                        'current_address': user_details.current_address,
+                        'permanent_address': user_details.permanent_address,
+                        'position': user_details.position,
+                        'job_profile': user_details.job_profile,
+                        'employee_type': user_details.employee_type,
+                        'time_type': user_details.time_type,
+                        'location': user_details.location,
+                        'hire_date': user_details.hire_date,
+                        'length_of_service': user_details.length_of_service,
+                        'date_of_birth': user_details.date_of_birth,
+                        'mobile_number': user_details.mobile_number,
+                        'emergency_contact_person': user_details.emergency_contact_person,
+                        'emergency_contact_number': user_details.emergency_contact_number,
+                        'gender': user_details.gender,
+                        'country_of_birth': user_details.country_of_birth,
+                        'marital_status': user_details.marital_status,
+                        'bank_account_name': user_details.bank_account_name,
+                        'bank_account_number': user_details.bank_account_number,
+                        'bank_account_ifsc_code': user_details.bank_account_ifsc_code,
+                        'pf_uan_no': user_details.pf_uan_no,
+                        'pf_no': user_details.pf_no,
+                        'pan_no': user_details.pan_no,
+                        'aadhar_number': user_details.aadhar_number,
+                    }
+                })
+
+            return Response({'user_details': all_user_details}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

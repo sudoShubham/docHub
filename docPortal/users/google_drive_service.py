@@ -11,7 +11,7 @@ from googleapiclient.http import MediaInMemoryUpload, MediaFileUpload
 # Initialize the Google Drive service
 def get_drive_service():
     creds = service_account.Credentials.from_service_account_file(
-        '/Users/shubham/Desktop/Projects/docHub/lively-tensor-441706-h2-d8c7c64a6f3c.json', scopes=['https://www.googleapis.com/auth/drive']
+        '/Users/shubham/Desktop/DocHub/docHub/lively-tensor-441706-h2-d8c7c64a6f3c.json', scopes=['https://www.googleapis.com/auth/drive']
     )
     return build('drive', 'v3', credentials=creds)
 
