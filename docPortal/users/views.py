@@ -431,6 +431,8 @@ class AllUserDetailsView(APIView):
                         'pf_no': user_details.pf_no,
                         'pan_no': user_details.pan_no,
                         'aadhar_number': user_details.aadhar_number,
+                        'reporting_manager': user_details.reporting_manager.first_name + " " + user_details.reporting_manager.last_name
+                                                if user_details.reporting_manager else None,
                     }
                 })
 
