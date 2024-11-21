@@ -10,9 +10,8 @@ from .google_drive_service import get_drive_service, get_or_create_folder, uploa
 
 from rest_framework import status
 from django.contrib.auth import get_user_model
-
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-from .models import User
+from .models import User, UserDetails
 
 class RegisterView(APIView):
     def post(self, request):
@@ -23,24 +22,7 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class LoginView(APIView):
-#     def post(self, request):
-#         serializer = LoginSerializer(data=request.data)
-#         if serializer.is_valid():
-#             email = serializer.validated_data['email']
-#             password = serializer.validated_data['password']
-#             user = User.objects.filter(email=email).first()
 
-#             if user and user.check_password(password):
-#                 refresh = RefreshToken.for_user(user)
-#                 return Response({
-#                     'access_token': str(refresh.access_token),
-#                     'refresh_token': str(refresh),
-#                     'user': UserSerializer(user).data,
-#                 })
-#             return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 class LoginView(APIView):
     def post(self, request):
@@ -283,3 +265,105 @@ class FolderDocumentsView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=500)
+        
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Fetch user from request
+            user = request.user
+
+            # Fetch the additional user details
+            try:
+                user_details = UserDetails.objects.get(user=user)
+            except UserDetails.DoesNotExist:
+                return Response({'error': 'User details not found.'}, status=404)
+
+            # Prepare the response data
+            user_data = {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "personal_email": user_details.personal_email,
+                "date_of_birth": user_details.date_of_birth,
+                "blood_group": user_details.blood_group,
+                "current_address": user_details.current_address,
+                "permanent_address": user_details.permanent_address,
+                "employee_id": user_details.employee_id,
+                "reporting_manager": user_details.reporting_manager.first_name
+                if user_details.reporting_manager else None,
+                "position": user_details.position,
+                "job_profile": user_details.job_profile,
+                "employee_type": user_details.employee_type,
+                "time_type": user_details.time_type,
+                "location": user_details.location,
+                "hire_date": user_details.hire_date,
+                "length_of_service": user_details.length_of_service,
+                "mobile_number": user_details.mobile_number,
+                "emergency_contact_person": user_details.emergency_contact_person,
+                "emergency_contact_number": user_details.emergency_contact_number,
+                "gender": user_details.gender,
+                "country_of_birth": user_details.country_of_birth,
+                "marital_status": user_details.marital_status,
+                "bank_account_name": user_details.bank_account_name,
+                "bank_account_number": user_details.bank_account_number,
+                "bank_account_ifsc_code": user_details.bank_account_ifsc_code,
+                "pf_uan_no": user_details.pf_uan_no,
+                "pf_no": user_details.pf_no,
+                "pan_no": user_details.pan_no,
+                "aadhar_number": user_details.aadhar_number,
+            }
+
+            return Response({"user_profile": user_data}, status=200)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+        
+
+
+class UpdateUserDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user  # Get the authenticated user
+        user_details = user.details  # Access related UserDetails
+
+        # List of updatable fields
+        updatable_fields = [
+            "personal_email",
+            "blood_group",
+            "current_address",
+            "permanent_address",
+            "mobile_number",
+            "emergency_contact_person",
+            "emergency_contact_number",
+            "gender",
+            "country_of_birth",
+            "marital_status",
+            "bank_account_name",
+            "bank_account_number",
+            "bank_account_ifsc_code",
+            "pf_uan_no",
+            "pf_no",
+            "pan_no",
+            "aadhar_number",
+            "date_of_birth"
+        ]
+
+        changes_made = False
+
+        # Update only fields provided in the request
+        for field in updatable_fields:
+            new_value = request.data.get(field)
+            if new_value is not None:  # Check if the field is included in the request
+                current_value = getattr(user_details, field, None)
+                if current_value != new_value:  # Update only if the value has changed
+                    setattr(user_details, field, new_value)
+                    changes_made = True
+
+        if changes_made:
+            user_details.save()  # Save changes
+            return Response({"message": "User details updated successfully."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "No changes detected."}, status=status.HTTP_400_BAD_REQUEST)

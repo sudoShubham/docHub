@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from .models import User, UserDetails
 
 class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
@@ -36,7 +37,21 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = get_user_model()
-        fields = ['id', 'email', 'username', 'first_name', 'last_name']
+        model = UserDetails
+        fields = [
+            'personal_email', 'blood_group', 'current_address', 'permanent_address',
+            'employee_id', 'reporting_manager', 'position', 'job_profile', 'employee_type',
+            'time_type', 'location', 'hire_date', 'length_of_service', 'date_of_birth', 
+            'mobile_number', 'emergency_contact_person', 'emergency_contact_number', 'gender',
+            'country_of_birth', 'marital_status', 'bank_account_name', 'bank_account_number',
+            'bank_account_ifsc_code', 'pf_uan_no', 'pf_no', 'pan_no', 'aadhar_number'
+        ]
+
+class UserSerializer(serializers.ModelSerializer):
+    details = UserDetailsSerializer(read_only=True)  # Include UserDetails as a nested serializer
+
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'details']  # Add 'details' field
