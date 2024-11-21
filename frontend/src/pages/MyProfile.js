@@ -299,13 +299,13 @@ const MyProfile = () => {
                             type="date"
                             value={value}
                             onChange={(e) => handleInputChange(e, key)}
-                            className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300"
+                            className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300 bg-white"
                           />
                         ) : key === "marital_status" ? (
                           <select
                             value={value}
                             onChange={(e) => handleInputChange(e, key)}
-                            className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300"
+                            className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300 bg-white"
                           >
                             <option value="">Select Marital Status</option>
                             {maritalStatusOptions.map((option) => (
@@ -318,7 +318,7 @@ const MyProfile = () => {
                           <select
                             value={value}
                             onChange={(e) => handleInputChange(e, key)}
-                            className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300"
+                            className="w-full text-gray-700 border rounded-lg p-2 outline-none ring-2 ring-sky-300 bg-white"
                           >
                             <option value="">Select Blood Group</option>
                             {bloodGroupOptions.map((option) => (
@@ -346,7 +346,7 @@ const MyProfile = () => {
 
           {/* Save Changes */}
           {isEditing && (
-            <div className="flex justify-end mt-4">
+            <div className="mt-6 sticky bottom-4 flex justify-end">
               <button
                 onClick={handleSave}
                 className="py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
