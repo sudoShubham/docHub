@@ -106,18 +106,30 @@ const Organization = () => {
           treeData.downward.map((employee) => (
             <div
               key={employee.email}
-              className="bg-white border m-5 border-gray-300 rounded-lg p-6 shadow-lg w-full shover:shadow-xl hover:bg-gray-50"
+              className="bg-white border border-gray-300 rounded-lg p-6 shadow-lg mb-4 transition-all duration-300 hover:shadow-xl hover:bg-gray-50 overflow-hidden"
             >
-              <div className="text-lg font-semibold text-gray-800">
-                {employee.name}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between sm:space-x-4">
+                <div className="sm:flex-1">
+                  <div className="text-lg font-semibold text-gray-800">
+                    {employee.name}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {employee.position || "N/A"}
+                  </div>
+                  <div className="text-xs text-blue-500">{employee.email}</div>
+                </div>
+                {employee.reports && employee.reports.length > 0 && (
+                  <button
+                    onClick={() => toggleSubordinates(employee.email)}
+                    className="mt-2 sm:mt-0 text-blue-500 hover:text-blue-700 transition-all duration-200"
+                  >
+                    {openEmployees[employee.email]
+                      ? "Hide Subordinates"
+                      : "Show Subordinates"}
+                  </button>
+                )}
               </div>
-              <div className="text-sm text-gray-600">
-                {employee.position || "N/A"}
-              </div>
-              <div className="text-xs text-blue-500">{employee.email}</div>
-
-              {/* Render nested subordinates if any */}
-              {employee.reports && employee.reports.length > 0 && (
+              {openEmployees[employee.email] && employee.reports && (
                 <div className="ml-6 mt-4 overflow-auto">
                   {employee.reports.map(renderEmployee)}
                 </div>
