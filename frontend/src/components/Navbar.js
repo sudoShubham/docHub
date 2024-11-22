@@ -76,10 +76,7 @@ const Navbar = () => {
             My Profile
           </Link>
           {isStaff && (
-            <Link
-              to="/admin"
-              className="text-black hover:text-blue-600 py-2 font-bold"
-            >
+            <Link to="/admin" className="text-black hover:text-blue-600 py-2 ">
               Admin
             </Link>
           )}
@@ -130,7 +127,7 @@ const Navbar = () => {
             {isStaff && (
               <Link
                 to="/admin"
-                className="text-black hover:text-blue-600 w-full text-left py-2 font-bold"
+                className="text-black hover:text-blue-600 w-full text-left py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Admin

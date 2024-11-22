@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-import { Link } from "react-router-dom";
 import ChangePassword from "../components/ChangePassword";
 import { API_BASE_URL } from "../config";
 import { useNavigate } from "react-router-dom";
@@ -119,7 +118,7 @@ const MyProfile = () => {
         length_of_service: userDetails.length_of_service,
         employee_type: userDetails.employee_type,
         time_type: userDetails.time_type,
-        job_location: userDetails.job_location,
+        job_location: userDetails.location,
       },
       Emergency: {
         emergency_contact_person: userDetails.emergency_contact_person,

@@ -191,10 +191,8 @@ const AllUsersPage = () => {
     <div>
       <Navbar />
 
-      <div className="p-6 bg-gray-100 min-h-screen">
-        <h1 className="text-3xl font-bold text-center mb-8">
-          All Users and Details
-        </h1>
+      <div className="p-6 min-h-screen">
+        <h1 className="text-3xl font-bold text-center mb-8">All Users</h1>
 
         {/* Search Bar */}
         <div className="mb-6 max-w-md mx-auto">
@@ -215,18 +213,18 @@ const AllUsersPage = () => {
                 key={userDetail.user.username}
                 className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition duration-200"
               >
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                   <div>
-                    <h2 className="text-lg font-semibold truncate">
+                    <h2 className="truncate text-xl font-semibold text-gray-800 mb-4 border-b-2 border-sky-300 inline-block">
                       {userDetail.user.first_name} {userDetail.user.last_name}
                     </h2>
-                    <p className="text-gray-600 truncate">
-                      {userDetail.user.email}
+                    <p className="text-gray-600 truncate ">
+                      {userDetail.user.email} | {userDetail.details.employee_id}
                     </p>
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 mt-4 sm:mt-0">
                     <button
-                      className="text-blue-500 hover:underline"
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                       onClick={() =>
                         toggleUserDetails(userDetail.user.username)
                       }
@@ -237,14 +235,14 @@ const AllUsersPage = () => {
                     </button>
                     {editingUser === userDetail.user.username ? (
                       <button
-                        className="text-red-500 hover:underline"
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                         onClick={handleCancelEdit}
                       >
                         Cancel
                       </button>
                     ) : (
                       <button
-                        className="text-blue-500 hover:underline"
+                        className="px-4 py-2 bg-sky-400 text-white rounded-lg hover:bg-blue-600"
                         onClick={() => handleEdit(userDetail)}
                       >
                         Edit
@@ -255,7 +253,7 @@ const AllUsersPage = () => {
 
                 {/* Expanded User Details */}
                 {expandedUser === userDetail.user.username && (
-                  <div className="mt-4">
+                  <div className="overflow-x-auto sm:min-w-max">
                     <table className="min-w-full border-collapse table-auto">
                       <thead>
                         <tr className="bg-gray-100">
@@ -601,7 +599,7 @@ const AllUsersPage = () => {
                     </table>
 
                     {editingUser === userDetail.user.username && (
-                      <div className="mt-6 flex justify-end space-x-4">
+                      <div className="fixed bottom-4 right-4 flex space-x-4 z-50">
                         <button
                           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                           onClick={() => handleSave(userDetail)}

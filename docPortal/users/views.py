@@ -294,7 +294,7 @@ class UserProfileView(APIView):
                 "current_address": user_details.current_address,
                 "permanent_address": user_details.permanent_address,
                 "employee_id": user_details.employee_id,
-                "reporting_manager": user_details.reporting_manager.first_name
+                "reporting_manager": user_details.reporting_manager.first_name + " "+ user_details.reporting_manager.last_name
                 if user_details.reporting_manager else None,
                 "position": user_details.position,
                 "job_profile": user_details.job_profile,
@@ -443,6 +443,54 @@ class AllUserDetailsView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class UpdateUserDetailsViewSelf(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user  # Get the authenticated user
+        user_details = user.details  # Access related UserDetails
+
+        # List of updatable fields
+        updatable_fields = [
+            "personal_email",
+            "blood_group",
+            "current_address",
+            "permanent_address",
+            "mobile_number",
+            "emergency_contact_person",
+            "emergency_contact_number",
+            "gender",
+            "country_of_birth",
+            "marital_status",
+            "bank_account_name",
+            "bank_account_number",
+            "bank_account_ifsc_code",
+            "pf_uan_no",
+            "pf_no",
+            "pan_no",
+            "aadhar_number",
+            "date_of_birth"
+        ]
+
+        changes_made = False
+
+        # Update only fields provided in the request
+        for field in updatable_fields:
+            new_value = request.data.get(field)
+            if new_value is not None:  # Check if the field is included in the request
+                current_value = getattr(user_details, field, None)
+                if current_value != new_value:  # Update only if the value has changed
+                    setattr(user_details, field, new_value)
+                    changes_made = True
+
+        if changes_made:
+            user_details.save()  # Save changes
+            return Response({"message": "User details updated successfully."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "No changes detected."}, status=status.HTTP_400_BAD_REQUEST)
         
 
 

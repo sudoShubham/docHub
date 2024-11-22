@@ -52,7 +52,7 @@ const Login = () => {
 
         {/* Right side with login form */}
         <div className="w-full md:w-1/2 p-8">
-          <h2 className="text-3xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-200 border-b-4 border-blue-500 pb-2">
+          <h2 className="text-3xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-sky-500 border-b-4 border-sky-400 pb-2">
             LOGIN
           </h2>
           <form onSubmit={handleLogin} className="space-y-6">

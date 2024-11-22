@@ -11,6 +11,7 @@ import AdminPage from "./pages/AdminPage";
 import AdminDocumentsPage from "./pages/AdminDocumentsPage";
 import Home from "./pages/Home";
 import AllUsersPage from "./pages/AllUsersPage";
+import ExportDataPage from "./pages/ExportDataPage";
 
 const App = () => {
   return (
@@ -50,6 +51,11 @@ const App = () => {
         <Route
           path="/all-users"
           element={<PrivateRoute element={AllUsersPage} />}
+        />
+
+        <Route
+          path="/export-data"
+          element={<PrivateRoute element={ExportDataPage} />}
         />
       </Routes>
     </Router>
