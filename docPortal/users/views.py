@@ -597,3 +597,73 @@ class UpdateUserDetailsView(APIView):
         user.save()
 
         return Response({"success": "User and details updated successfully."}, status=status.HTTP_200_OK)
+    
+
+class ReportingHierarchyView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_hierarchy_upwards(self, user, visited=None):
+        """
+        Recursively fetch the hierarchy upwards (reporting managers) with a detailed response, including employee_id.
+        """
+        if visited is None:
+            visited = set()
+
+        if user in visited:
+            return []  # Stop recursion for cycles
+
+        visited.add(user)
+
+        hierarchy = []
+        user_details = UserDetails.objects.filter(user=user).select_related('reporting_manager').first()
+        if user_details and user_details.reporting_manager:
+            manager = user_details.reporting_manager
+            manager_details = UserDetails.objects.filter(user=manager).first()
+            hierarchy.append({
+                "employee_id": manager_details.employee_id if manager_details else None,
+                "name": manager.get_full_name(),
+                "email": manager.email,
+                "position": manager_details.position if manager_details else None,
+                "reports": self.get_hierarchy_upwards(manager, visited)  # Recursive call
+            })
+        return hierarchy
+           
+
+    def get_hierarchy_downwards(self, user, visited=None):
+        """
+        Recursively fetch the hierarchy downwards (direct and indirect reports), avoiding cycles.
+        """
+        if visited is None:
+            visited = set()
+
+        if user in visited:
+            return []  # Stop recursion for cycles
+
+        visited.add(user)
+
+        reports = UserDetails.objects.filter(reporting_manager=user).select_related('user')
+        hierarchy = []
+        for report in reports:
+            hierarchy.append({
+                "employee_id": report.employee_id,
+                "name": report.user.get_full_name(),
+                "email": report.user.email,
+                "position": report.position,
+                "reports": self.get_hierarchy_downwards(report.user, visited),  # Recursive call with visited set
+            })
+        return hierarchy    
+
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+
+        # Fetch the upward hierarchy
+        upward_hierarchy = self.get_hierarchy_upwards(user)
+
+        # Fetch the downward hierarchy
+        downward_hierarchy = self.get_hierarchy_downwards(user)
+
+        return Response({
+            "upward_hierarchy": upward_hierarchy,
+            "downward_hierarchy": downward_hierarchy,
+        })

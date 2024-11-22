@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView, LoginView, DocumentUploadView, UserDocumentsView, UpdatePasswordView, AllUserDocumentsView, FolderDocumentsView, UserProfileView, UpdateUserDetailsView, AllUserDetailsView, UpdateUserDetailsView, UpdateUserDetailsViewSelf
+from .views import RegisterView, LoginView, DocumentUploadView, UserDocumentsView, UpdatePasswordView, AllUserDocumentsView, FolderDocumentsView, UserProfileView, UpdateUserDetailsView, AllUserDetailsView, UpdateUserDetailsView, UpdateUserDetailsViewSelf, ReportingHierarchyView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -13,4 +13,5 @@ urlpatterns = [
     path('update-profile/', UpdateUserDetailsViewSelf.as_view(), name='update-profile'),
     path('admin/user-details/', AllUserDetailsView.as_view(), name='all_user_details'),
     path('admin/user-update/', UpdateUserDetailsView.as_view(), name='update-user-details'),
+    path('reporting-hierarchy/', ReportingHierarchyView.as_view(), name='reporting-hierarchy'),
 ]

@@ -507,10 +507,7 @@ const AllUsersPage = () => {
                                       >
                                         {/* <option value="">Select Manager</option> */}
                                         {users
-                                          .filter(
-                                            (u) =>
-                                              u.user.email !== currentUserEmail
-                                          ) // Filter out self
+                                          .filter((u) => u.user.email) // Filter out self
                                           .map((u) => (
                                             <option
                                               key={u.user.username}
