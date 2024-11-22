@@ -30,7 +30,7 @@ const Organization = () => {
       name: node.name,
       email: node.email || "N/A",
       position: node.position || "N/A",
-      children: node.reports?.map((child) => formatNode(child)) || [],
+      reports: node.reports?.map((child) => formatNode(child)) || [],
     });
 
     const upwardHierarchy = data.upward_hierarchy[0];
@@ -59,7 +59,7 @@ const Organization = () => {
     return (
       <div
         key={employee.email}
-        className="bg-white border border-gray-300 rounded-lg p-6 shadow-lg mb-4 transition-all duration-300 hover:shadow-xl hover:bg-gray-50"
+        className="bg-white border border-gray-300 rounded-lg p-6 shadow-lg mb-4 transition-all duration-300 hover:shadow-xl hover:bg-gray-50 overflow-hidden"
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between sm:space-x-4">
           <div className="sm:flex-1">
@@ -71,7 +71,7 @@ const Organization = () => {
             </div>
             <div className="text-xs text-blue-500">{employee.email}</div>
           </div>
-          {employee.children && employee.children.length > 0 && (
+          {employee.reports && employee.reports.length > 0 && (
             <button
               onClick={() => toggleSubordinates(employee.email)}
               className="mt-2 sm:mt-0 text-blue-500 hover:text-blue-700 transition-all duration-200"
@@ -80,9 +80,9 @@ const Organization = () => {
             </button>
           )}
         </div>
-        {isOpen && employee.children && (
-          <div className="ml-6 mt-4">
-            {employee.children.map(renderEmployee)}
+        {isOpen && employee.reports && (
+          <div className="ml-6 mt-4 overflow-auto">
+            {employee.reports.map(renderEmployee)}
           </div>
         )}
       </div>
@@ -92,21 +92,21 @@ const Organization = () => {
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <h2 className="text-2xl sm:text-3xl font-semibold text-black p-4 border-b-4 border-sky-300 inline-block mb-6">
-        My Reporting Line
+        My Reporting Line (Upward Hierarchy)
       </h2>
       <div className="p-4">{renderEmployee(treeData.upward)}</div>
 
       {/* Reports to Me Section */}
       <h2 className="text-2xl sm:text-3xl font-semibold text-black p-4 border-b-4 border-sky-300 inline-block mb-6">
-        Reports To Me
+        Reports To Me (Downward Hierarchy)
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4">
+      <div className="p-4">
         {treeData.downward && treeData.downward.length > 0 ? (
           treeData.downward.map((employee) => (
             <div
               key={employee.email}
-              className="bg-white border border-gray-300 rounded-lg p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:bg-gray-50"
+              className="bg-white border m-5 border-gray-300 rounded-lg p-6 shadow-lg w-full shover:shadow-xl hover:bg-gray-50"
             >
               <div className="text-lg font-semibold text-gray-800">
                 {employee.name}
@@ -117,9 +117,9 @@ const Organization = () => {
               <div className="text-xs text-blue-500">{employee.email}</div>
 
               {/* Render nested subordinates if any */}
-              {employee.children && employee.children.length > 0 && (
-                <div className="ml-6 mt-4">
-                  {employee.children.map(renderEmployee)}
+              {employee.reports && employee.reports.length > 0 && (
+                <div className="ml-6 mt-4 overflow-auto">
+                  {employee.reports.map(renderEmployee)}
                 </div>
               )}
             </div>
