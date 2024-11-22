@@ -80,6 +80,10 @@ const MyProfile = () => {
     setIsChangePasswordOpen(!isChangePasswordOpen);
   };
 
+  const handleClickOrg = () => {
+    navigate("/my-organization");
+  };
+
   const groupDetails = (userDetails) => {
     if (!userDetails) return {};
 
@@ -228,6 +232,13 @@ const MyProfile = () => {
           className="py-2 px-4 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
         >
           {isEditing ? "Cancel" : "Edit Profile"}
+        </button>
+
+        <button
+          onClick={handleClickOrg}
+          className="py-2 px-4 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+        >
+          My Organization
         </button>
 
         <button

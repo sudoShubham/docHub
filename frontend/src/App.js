@@ -12,6 +12,7 @@ import AdminDocumentsPage from "./pages/AdminDocumentsPage";
 import Home from "./pages/Home";
 import AllUsersPage from "./pages/AllUsersPage";
 import ExportDataPage from "./pages/ExportDataPage";
+import MyOrganization from "./pages/MyOrganization";
 
 const App = () => {
   return (
@@ -56,6 +57,11 @@ const App = () => {
         <Route
           path="/export-data"
           element={<PrivateRoute element={ExportDataPage} />}
+        />
+
+        <Route
+          path="/my-organization"
+          element={<PrivateRoute element={MyOrganization} />}
         />
       </Routes>
     </Router>
