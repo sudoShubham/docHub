@@ -12,6 +12,7 @@ const AllUsersPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [editingUser, setEditingUser] = useState(null);
   const [updatedUserDetails, setUpdatedUserDetails] = useState({});
+  const [originalUserDetails, setOriginalUserDetails] = useState({}); // To store the original details
 
   const fetchUserDetails = async () => {
     try {
@@ -57,21 +58,81 @@ const AllUsersPage = () => {
   const handleEdit = (user) => {
     setEditingUser(user.user.username);
     setUpdatedUserDetails(user);
+    setOriginalUserDetails(user); // Store the original details for comparison
     setExpandedUser(user.user.username);
   };
 
+  // const handleSave = async (user) => {
+  //   try {
+  //     // Create a payload with only changed fields
+  //     const updatedFields = {};
+  //     for (const key in updatedUserDetails.details) {
+  //       if (
+  //         updatedUserDetails.details[key] !== originalUserDetails.details[key]
+  //       ) {
+  //         updatedFields[key] = updatedUserDetails.details[key];
+  //       }
+  //     }
+
+  //     if (Object.keys(updatedFields).length === 0) {
+  //       alert("No changes detected.");
+  //       return;
+  //     }
+
+  //     const response = await axios.put(
+  //       `${API_BASE_URL}/api/users/admin/user-update/`,
+  //       { details: updatedFields }, // Send only updated fields
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (response.status === 200) {
+  //       alert("User details updated successfully.");
+  //       setEditingUser(null);
+  //       fetchUserDetails();
+  //     } else {
+  //       alert("Failed to update user details.");
+  //     }
+  //   } catch (error) {
+  //     alert("Error updating user details.");
+  //   }
+  // };
+
   const handleSave = async (user) => {
     try {
-      console.log(updatedUserDetails);
+      // Create a payload with the email and only changed fields
+      const updatedFields = {};
+      for (const key in updatedUserDetails.details) {
+        if (
+          updatedUserDetails.details[key] !== originalUserDetails.details[key]
+        ) {
+          updatedFields[key] = updatedUserDetails.details[key];
+        }
+      }
+
+      if (Object.keys(updatedFields).length === 0) {
+        alert("No changes detected.");
+        return;
+      }
+
+      const payload = {
+        email: updatedUserDetails.user.email, // Include the email
+        details: updatedFields, // Send only updated fields
+      };
+
       const response = await axios.put(
-        `${API_BASE_URL}/api/users/admin/update/${user.user.username}/`,
-        updatedUserDetails,
+        `${API_BASE_URL}/api/users/admin/user-update/`,
+        payload, // Send email and updated fields
         {
           headers: {
             Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
           },
         }
       );
+
       if (response.status === 200) {
         alert("User details updated successfully.");
         setEditingUser(null);
@@ -87,6 +148,7 @@ const AllUsersPage = () => {
   const handleCancelEdit = () => {
     setEditingUser(null);
     setUpdatedUserDetails({});
+    setOriginalUserDetails({}); // Reset original details on cancel
   };
 
   const handleChange = (e, field) => {
@@ -342,7 +404,7 @@ const AllUsersPage = () => {
                             userDetail.details.mobile_number || "N/A",
                             false,
                             "number",
-                            "date_of_birth",
+                            "mobile_number",
                           ],
                           [
                             "Emergency Contact Person",
@@ -350,7 +412,7 @@ const AllUsersPage = () => {
                               "N/A",
                             false,
                             "text",
-                            "date_of_birth",
+                            "emergency_contact_person",
                           ],
                           [
                             "Emergency Contact Number",
@@ -358,7 +420,7 @@ const AllUsersPage = () => {
                               "N/A",
                             false,
                             "number",
-                            "date_of_birth",
+                            "emergency_contact_number",
                           ],
                           [
                             "Gender",
@@ -404,7 +466,7 @@ const AllUsersPage = () => {
                           ],
                           [
                             "PF Account Number",
-                            userDetail.details.pf_account_number || "N/A",
+                            userDetail.details.pf_uan_no || "N/A",
                             false,
                             "text",
                             "pf_account_number",
@@ -427,7 +489,7 @@ const AllUsersPage = () => {
                                     <input
                                       type="date"
                                       value={
-                                        updatedUserDetails.details[field] ||
+                                        updatedUserDetails.details[field_key] ||
                                         value
                                       }
                                       onChange={(e) =>
@@ -445,7 +507,7 @@ const AllUsersPage = () => {
                                         onChange={handleReportingManagerChange}
                                         className="border px-3 py-2 rounded-md shadow-sm w-full"
                                       >
-                                        <option value="">Select Manager</option>
+                                        {/* <option value="">Select Manager</option> */}
                                         {users
                                           .filter(
                                             (u) =>

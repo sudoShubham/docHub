@@ -7,11 +7,14 @@ from django.contrib.auth.hashers import check_password
 from rest_framework.permissions import IsAuthenticated
 from googleapiclient.errors import HttpError
 from .google_drive_service import get_drive_service, get_or_create_folder, upload_file_with_versioning, share_folder_with_email, list_files_in_folder
-
+from datetime import datetime
 from rest_framework import status
 from django.contrib.auth import get_user_model
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 from .models import User, UserDetails
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+
 
 class RegisterView(APIView):
     def post(self, request):
@@ -440,3 +443,109 @@ class AllUserDetailsView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+class UpdateUserDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, *args, **kwargs):
+        # Check if the user is staff
+        if not request.user.is_staff:
+            return Response({"error": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+
+        data = request.data
+        user_email = data.get("email")
+        details_data = data.get("details")
+
+        # Get user by email
+        try:
+            user = User.objects.get(email=user_email)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Update UserDetails fields
+        user_details = user.details
+
+        # Handle reporting_manager
+        if 'reporting_manager' in details_data and details_data['reporting_manager']:
+            try:
+                reporting_manager = User.objects.get(email=details_data['reporting_manager'])
+                user_details.reporting_manager = reporting_manager
+            except User.DoesNotExist:
+                return Response({"error": f"Reporting manager with email '{details_data['reporting_manager']}' not found."},
+                                 status=status.HTTP_404_NOT_FOUND)
+
+        # Handle hire_date
+        if 'hire_date' in details_data and details_data['hire_date']:
+            try:
+                hire_date = datetime.strptime(details_data['hire_date'], "%Y-%m-%d").date()
+                user_details.hire_date = hire_date
+            except ValueError:
+                return Response({"error": "Invalid date format. Please use YYYY-MM-DD."},
+                                 status=status.HTTP_400_BAD_REQUEST)
+
+
+        #handle first name and last name
+        if 'first_name' in details_data:
+            user.first_name = details_data['first_name']
+
+        if 'last_name' in details_data:
+            user.last_name = details_data['last_name']
+
+        # Handle other fields
+        if 'personal_email' in details_data:
+            user_details.personal_email = details_data['personal_email']
+        if 'blood_group' in details_data:
+            user_details.blood_group = details_data['blood_group']
+        if 'current_address' in details_data:
+            user_details.current_address = details_data['current_address']
+        if 'permanent_address' in details_data:
+            user_details.permanent_address = details_data['permanent_address']
+        if 'position' in details_data:
+            user_details.position = details_data['position']
+        if 'job_profile' in details_data:
+            user_details.job_profile = details_data['job_profile']
+        if 'employee_type' in details_data:
+            user_details.employee_type = details_data['employee_type']
+        if 'time_type' in details_data:
+            user_details.time_type = details_data['time_type']
+        if 'location' in details_data:
+            user_details.location = details_data['location']
+        if 'length_of_service' in details_data:
+            user_details.length_of_service = details_data['length_of_service']
+        if 'date_of_birth' in details_data:
+            user_details.date_of_birth = details_data['date_of_birth']
+        if 'mobile_number' in details_data:
+            user_details.mobile_number = details_data['mobile_number']
+        if 'emergency_contact_person' in details_data:
+            user_details.emergency_contact_person = details_data['emergency_contact_person']
+        if 'emergency_contact_number' in details_data:
+            user_details.emergency_contact_number = details_data['emergency_contact_number']
+        if 'gender' in details_data:
+            user_details.gender = details_data['gender']
+        if 'country_of_birth' in details_data:
+            user_details.country_of_birth = details_data['country_of_birth']
+        if 'marital_status' in details_data:
+            user_details.marital_status = details_data['marital_status']
+
+        # Bank and ID details
+        if 'bank_account_name' in details_data:
+            user_details.bank_account_name = details_data['bank_account_name']
+        if 'bank_account_number' in details_data:
+            user_details.bank_account_number = details_data['bank_account_number']
+        if 'bank_account_ifsc_code' in details_data:
+            user_details.bank_account_ifsc_code = details_data['bank_account_ifsc_code']
+        if 'pf_account_number' in details_data:
+            user_details.pf_uan_no = details_data['pf_account_number']
+        if 'pf_no' in details_data:
+            user_details.pf_no = details_data['pf_no']
+        if 'pan_no' in details_data:
+            user_details.pan_no = details_data['pan_no']
+        if 'aadhar_number' in details_data:
+            user_details.aadhar_number = details_data['aadhar_number']
+
+        user_details.save()
+        user.save()
+
+        return Response({"success": "User and details updated successfully."}, status=status.HTTP_200_OK)
