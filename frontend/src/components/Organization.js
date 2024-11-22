@@ -1,4 +1,3 @@
-// src/components/Organization.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
@@ -35,11 +34,11 @@ const Organization = () => {
     });
 
     const upwardHierarchy = data.upward_hierarchy[0];
-    const downwardHierarchy = data.downward_hierarchy[0];
+    const downwardHierarchy = data.downward_hierarchy;
 
     return {
       upward: formatNode(upwardHierarchy),
-      downward: formatNode(downwardHierarchy),
+      downward: downwardHierarchy,
     };
   };
 
@@ -67,7 +66,9 @@ const Organization = () => {
             <div className="text-lg font-semibold text-gray-800">
               {employee.name}
             </div>
-            <div className="text-sm text-gray-600">{employee.position}</div>
+            <div className="text-sm text-gray-600">
+              {employee.position || "N/A"}
+            </div>
             <div className="text-xs text-blue-500">{employee.email}</div>
           </div>
           {employee.children && employee.children.length > 0 && (
@@ -94,10 +95,39 @@ const Organization = () => {
         My Reporting Line
       </h2>
       <div className="p-4">{renderEmployee(treeData.upward)}</div>
+
+      {/* Reports to Me Section */}
       <h2 className="text-2xl sm:text-3xl font-semibold text-black p-4 border-b-4 border-sky-300 inline-block mb-6">
         Reports To Me
       </h2>
-      <div className="p-4">{renderEmployee(treeData.downward)}</div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4">
+        {treeData.downward && treeData.downward.length > 0 ? (
+          treeData.downward.map((employee) => (
+            <div
+              key={employee.email}
+              className="bg-white border border-gray-300 rounded-lg p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:bg-gray-50"
+            >
+              <div className="text-lg font-semibold text-gray-800">
+                {employee.name}
+              </div>
+              <div className="text-sm text-gray-600">
+                {employee.position || "N/A"}
+              </div>
+              <div className="text-xs text-blue-500">{employee.email}</div>
+
+              {/* Render nested subordinates if any */}
+              {employee.children && employee.children.length > 0 && (
+                <div className="ml-6 mt-4">
+                  {employee.children.map(renderEmployee)}
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <div>No reports to show</div>
+        )}
+      </div>
     </div>
   );
 };
