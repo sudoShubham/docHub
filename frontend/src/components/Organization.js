@@ -92,13 +92,13 @@ const Organization = () => {
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <h2 className="text-2xl sm:text-3xl font-semibold text-black p-4 border-b-4 border-sky-300 inline-block mb-6">
-        My Reporting Line (Upward Hierarchy)
+        My Reporting Line
       </h2>
       <div className="p-4">{renderEmployee(treeData.upward)}</div>
 
       {/* Reports to Me Section */}
       <h2 className="text-2xl sm:text-3xl font-semibold text-black p-4 border-b-4 border-sky-300 inline-block mb-6">
-        Reports To Me (Downward Hierarchy)
+        Reports To Me
       </h2>
 
       <div className="p-4">

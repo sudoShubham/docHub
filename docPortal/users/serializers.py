@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import User, UserDetails
+from .models import User, UserDetails, PublicHoliday
 
 class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
@@ -55,3 +55,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'first_name', 'last_name', 'details']  # Add 'details' field
+
+class PublicHolidaySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PublicHoliday
+        fields = ['id', 'date', 'name', 'comment']

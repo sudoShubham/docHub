@@ -34,10 +34,6 @@ const MyOrganization = () => {
 
         {/* Main Content */}
         <div className="w-full md:w-3/4 p-6">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl m-5 font-semibold text-center mb-8 text-sky-600">
-            My Organization
-          </h1>
-
           {activeSection === "organization" && <Organization />}
 
           {activeSection === "leaveApprovals" && <LeaveApprovals />}

@@ -139,3 +139,18 @@ def create_user_details(sender, instance, created, **kwargs):
     """
     if created and not hasattr(instance, 'details'):
         UserDetails.objects.create(user=instance)
+
+
+#Holidays Table
+class PublicHoliday(models.Model):
+    date = models.DateField(unique=True)  # Ensure each holiday date is unique
+    name = models.CharField(max_length=100)  # Holiday name
+    comment = models.TextField(null=True, blank=True)  # Optional comments about the holiday
+
+    class Meta:
+        verbose_name = "Public Holiday"
+        verbose_name_plural = "Public Holidays"
+        ordering = ["date"]  # Orders holidays by date
+
+    def __str__(self):
+        return f"{self.name} ({self.date})"

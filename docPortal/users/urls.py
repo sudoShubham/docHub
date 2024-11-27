@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView, LoginView, DocumentUploadView, UserDocumentsView, UpdatePasswordView, AllUserDocumentsView, FolderDocumentsView, UserProfileView, UpdateUserDetailsView, AllUserDetailsView, UpdateUserDetailsView, UpdateUserDetailsViewSelf, ReportingHierarchyView
+from .views import RegisterView, LoginView, DocumentUploadView, UserDocumentsView, UpdatePasswordView, AllUserDocumentsView, FolderDocumentsView, UserProfileView, UpdateUserDetailsView, AllUserDetailsView, UpdateUserDetailsView, UpdateUserDetailsViewSelf, ReportingHierarchyView, PublicHolidayView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -14,4 +14,6 @@ urlpatterns = [
     path('admin/user-details/', AllUserDetailsView.as_view(), name='all_user_details'),
     path('admin/user-update/', UpdateUserDetailsView.as_view(), name='update-user-details'),
     path('reporting-hierarchy/', ReportingHierarchyView.as_view(), name='reporting-hierarchy'),
+    path('public-holidays/', PublicHolidayView.as_view(), name='public-holiday-list'),  # GET all holidays or POST a new one
+    path('public-holidays/<int:pk>/', PublicHolidayView.as_view(), name='public-holiday-detail'), 
 ]

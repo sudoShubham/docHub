@@ -10,8 +10,8 @@ from .google_drive_service import get_drive_service, get_or_create_folder, uploa
 from datetime import datetime
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-from .models import User, UserDetails
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, PublicHolidaySerializer
+from .models import User, UserDetails, PublicHoliday
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 
@@ -667,3 +667,85 @@ class ReportingHierarchyView(APIView):
             "upward_hierarchy": upward_hierarchy,
             "downward_hierarchy": downward_hierarchy,
         })
+    
+class PublicHolidayView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        """
+        Retrieve all public holidays or a specific holiday if 'pk' is provided.
+        """
+        pk = kwargs.get('pk')
+        if pk:
+            try:
+                holiday = PublicHoliday.objects.get(pk=pk)
+                serializer = PublicHolidaySerializer(holiday)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except PublicHoliday.DoesNotExist:
+                return Response({"error": "Holiday not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        holidays = PublicHoliday.objects.all().order_by("date")
+        serializer = PublicHolidaySerializer(holidays, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Add a new public holiday. Only accessible to staff users.
+        """
+        if not request.user.is_staff:
+            return Response(
+                {"error": "You do not have permission to perform this action."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = PublicHolidaySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, *args, **kwargs):
+        """
+        Update a public holiday. Only accessible to staff users.
+        """
+        if not request.user.is_staff:
+            return Response(
+                {"error": "You do not have permission to perform this action."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        pk = kwargs.get('pk')
+        if not pk:
+            return Response({"error": "Holiday ID is required for update."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            holiday = PublicHoliday.objects.get(pk=pk)
+        except PublicHoliday.DoesNotExist:
+            return Response({"error": "Holiday not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = PublicHolidaySerializer(holiday, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        """
+        Delete a public holiday. Only accessible to staff users.
+        """
+        if not request.user.is_staff:
+            return Response(
+                {"error": "You do not have permission to perform this action."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        pk = kwargs.get('pk')
+        if not pk:
+            return Response({"error": "Holiday ID is required for deletion."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            holiday = PublicHoliday.objects.get(pk=pk)
+            holiday.delete()
+            return Response({"message": "Holiday deleted successfully."}, status=status.HTTP_200_OK)
+        except PublicHoliday.DoesNotExist:
+            return Response({"error": "Holiday not found."}, status=status.HTTP_404_NOT_FOUND)
