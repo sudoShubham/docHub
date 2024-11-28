@@ -34,7 +34,9 @@ const PublicHolidays = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
-        <div className="text-xl text-gray-600">Loading holidays...</div>
+        <div className="text-xl text-gray-600 animate-pulse">
+          Loading holidays...
+        </div>
       </div>
     );
   }
@@ -46,20 +48,20 @@ const PublicHolidays = () => {
   }
 
   return (
-    <div>
+    <div className="bg-white min-h-screen">
       <Navbar />
-      <div className="px-4 sm:px-6 lg:px-8">
+      <div className="px-6 sm:px-8 lg:px-10 py-8">
         <h2 className="text-2xl font-semibold text-black p-4 border-b-4 border-sky-300 inline-block mb-6">
           Public Holidays
         </h2>
-        <ul className="space-y-5">
+        <ul className="space-y-6">
           {holidays.map((holiday) => (
             <li
               key={holiday.id}
-              className="bg-gray-50 border border-gray-300 rounded-lg p-4 hover:bg-sky-50 transition duration-300"
+              className="bg-white border border-gray-200 rounded-lg shadow-md p-6 hover:bg-sky-50 transition duration-300 transform hover:scale-105"
             >
-              <div className="flex justify-between items-center mb-2">
-                <div className="font-medium text-lg text-gray-900">
+              <div className="flex justify-between items-center mb-4">
+                <div className="font-semibold text-xl text-gray-900">
                   {holiday.name}
                 </div>
                 <div className="text-sm text-gray-500">
@@ -67,7 +69,7 @@ const PublicHolidays = () => {
                 </div>
               </div>
               {holiday.comment && (
-                <div className="text-sm text-gray-600 mt-2 italic">
+                <div className="text-sm text-gray-700 mt-3 italic">
                   <strong>Comment:</strong> {holiday.comment}
                 </div>
               )}

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { format } from "date-fns";
+import { format, differenceInCalendarDays } from "date-fns";
 
 const ApplyLeave = ({ onLeaveApplied }) => {
   const [startDate, setStartDate] = useState(null);
@@ -12,46 +12,22 @@ const ApplyLeave = ({ onLeaveApplied }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [leaveMessage, setLeaveMessage] = useState("");
 
-  //   const handleSubmit = async (e) => {
-  //     e.preventDefault();
-  //     setError(null);
-  //     setSuccess(false);
-
-  //     if (!startDate || !endDate || !reason) {
-  //       setError("All fields are required.");
-  //       return;
-  //     }
-
-  //     const payload = {
-  //       start_date: startDate.toISOString().split("T")[0],
-  //       end_date: endDate.toISOString().split("T")[0],
-  //       reason,
-  //     };
-
-  //     try {
-  //       setLoading(true);
-  //       const response = await axios.post(
-  //         `${API_BASE_URL}/api/users/leave/apply/`,
-  //         payload,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
-  //           },
-  //         }
-  //       );
-  //       setSuccess("Leave applied successfully!");
-  //       onLeaveApplied(response.data); // Notify parent component
-  //       setStartDate(null);
-  //       setEndDate(null);
-  //       setReason("");
-  //     } catch (err) {
-  //       console.error("Error applying leave:", err);
-  //       setError("Failed to apply leave. Please try again.");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+  // Function to calculate the number of days between start and end dates
+  useEffect(() => {
+    if (startDate && endDate) {
+      const days = differenceInCalendarDays(endDate, startDate) + 1; // +1 to include both start and end days
+      setLeaveMessage(
+        `You are applying leave from ${format(
+          startDate,
+          "yyyy-MM-dd"
+        )} to ${format(endDate, "yyyy-MM-dd")} for ${days} day(s).`
+      );
+    } else {
+      setLeaveMessage("");
+    }
+  }, [startDate, endDate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -89,6 +65,7 @@ const ApplyLeave = ({ onLeaveApplied }) => {
       setStartDate(null);
       setEndDate(null);
       setReason("");
+      setLeaveMessage(""); // Clear message after successful submission
     } catch (err) {
       console.error("Error applying leave:", err);
       setError("Failed to apply leave. Please try again.");
@@ -139,8 +116,17 @@ const ApplyLeave = ({ onLeaveApplied }) => {
             rows={3}
           />
         </div>
+
+        {/* Display leave message as a bordered alert */}
+        {leaveMessage && (
+          <div className="border border-blue-500 bg-blue-50 text-blue-700 text-sm rounded-md p-4">
+            {leaveMessage}
+          </div>
+        )}
+
         {error && <div className="text-red-600 text-sm">{error}</div>}
         {success && <div className="text-green-600 text-sm">{success}</div>}
+
         <button
           type="submit"
           className={`inline-flex justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all duration-200 focus:outline-none ${
