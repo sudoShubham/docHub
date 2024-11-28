@@ -37,6 +37,19 @@ const Home = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Feature 1 */}
               <Link
+                to="/my-profile"
+                className="bg-white rounded-xl shadow-md p-6 transition duration-300 ease-in-out hover:shadow-xl hover:transform hover:scale-105"
+              >
+                <h3 className="text-xl font-semibold text-blue-500 mb-2">
+                  Profile
+                </h3>
+                <p className="text-gray-600">
+                  Keep your profile up-to-date and manage account settings
+                  easily.
+                </p>
+              </Link>
+              {/* Feature 2 */}
+              <Link
                 to="/my-documents"
                 className="bg-white rounded-xl shadow-md p-6 transition duration-300 ease-in-out hover:shadow-xl hover:transform hover:scale-105"
               >
@@ -49,32 +62,25 @@ const Home = () => {
                 </p>
               </Link>
 
-              {/* Feature 2 */}
-              <Link
-                to="/agreements"
-                className="bg-white rounded-xl shadow-md p-6 transition duration-300 ease-in-out hover:shadow-xl hover:transform hover:scale-105"
-              >
-                <h3 className="text-xl font-semibold text-blue-500 mb-2">
-                  Agreements
-                </h3>
-                <p className="text-gray-600">
-                  View and manage all your agreements in one centralized
-                  location.
-                </p>
-              </Link>
-
               {/* Feature 3 */}
               <Link
-                to="/my-profile"
+                to="/leaves"
                 className="bg-white rounded-xl shadow-md p-6 transition duration-300 ease-in-out hover:shadow-xl hover:transform hover:scale-105"
               >
                 <h3 className="text-xl font-semibold text-blue-500 mb-2">
-                  Profile
+                  My Leaves
                 </h3>
-                <p className="text-gray-600">
-                  Keep your profile up-to-date and manage account settings
-                  easily.
-                </p>
+                <p className="text-gray-600">Manage your leves easily.</p>
+              </Link>
+              {/* Feature 3 */}
+              <Link
+                to="/holidays"
+                className="bg-white rounded-xl shadow-md p-6 transition duration-300 ease-in-out hover:shadow-xl hover:transform hover:scale-105"
+              >
+                <h3 className="text-xl font-semibold text-blue-500 mb-2">
+                  My Holidays
+                </h3>
+                <p className="text-gray-600">See Holidays calender here.</p>
               </Link>
             </div>
           </div>

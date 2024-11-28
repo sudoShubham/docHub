@@ -2,7 +2,8 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from datetime import date
+from datetime import date, timedelta
+from django.contrib.auth import get_user_model
 
 
 # Custom UserManager
@@ -154,3 +155,77 @@ class PublicHoliday(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.date})"
+    
+
+# User = get_user_model()
+
+# Model to track leave balance for each user
+class LeaveBalance(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    total_leaves = models.IntegerField(default=20)
+    used_leaves = models.IntegerField(default=0)
+    
+    @property
+    def remaining_leaves(self):
+        return self.total_leaves - self.used_leaves
+
+    def update_remaining_leaves(self, leave_days_requested):
+        # Ensure that we don’t go negative
+        if self.used_leaves + leave_days_requested <= self.total_leaves:
+            self.used_leaves += leave_days_requested
+            self.save()
+        else:
+            raise ValueError("Insufficient leave balance")
+
+
+# Model to handle leave requests
+class LeaveRequest(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+        ("Cancelled", "Cancelled"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="leave_requests")
+    start_date = models.DateField()
+    end_date = models.DateField()
+    reason = models.TextField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")
+    applied_on = models.DateField(auto_now_add=True)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="approved_leaves")
+    manager_comment = models.TextField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        # Validate that leave dates don't overlap with public holidays
+        holidays = PublicHoliday.objects.filter(date__range=(self.start_date, self.end_date))
+        if holidays.exists():
+            raise ValueError("Leave cannot overlap with public holidays.")
+
+        # Ensure the requested leave doesn't exceed the remaining balance
+        leave_days = (self.end_date - self.start_date).days + 1
+        leave_balance = LeaveBalance.objects.get(user=self.user)
+
+        if self.status == "Approved" and leave_days > leave_balance.remaining_leaves:
+            raise ValueError("Insufficient leave balance.")
+
+        # # Deduct leave days from balance if approved
+        # if self.status == "Approved":
+        #     leave_balance.update_remaining_leaves(leave_days)  # Updates used_leaves
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.status} ({self.start_date} to {self.end_date})"
+
+
+# Signal to initialize leave balance for new users
+from django.db.models.signals import post_save
+
+def initialize_leave_balance(sender, instance, created, **kwargs):
+    if created and not hasattr(instance, "leave_balance"):
+        LeaveBalance.objects.create(user=instance)
+
+post_save.connect(initialize_leave_balance, sender=User)
+
+

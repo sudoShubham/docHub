@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.hashers import check_password
 from rest_framework.permissions import IsAuthenticated
 from googleapiclient.errors import HttpError
@@ -10,10 +10,11 @@ from .google_drive_service import get_drive_service, get_or_create_folder, uploa
 from datetime import datetime
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, PublicHolidaySerializer
-from .models import User, UserDetails, PublicHoliday
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, PublicHolidaySerializer, LeaveRequestSerializer
+from .models import User, UserDetails, PublicHoliday, LeaveBalance, LeaveRequest
 from django.shortcuts import get_object_or_404
-from django.db import transaction
+from django.db.models import Q
+
 
 
 class RegisterView(APIView):
@@ -749,3 +750,357 @@ class PublicHolidayView(APIView):
             return Response({"message": "Holiday deleted successfully."}, status=status.HTTP_200_OK)
         except PublicHoliday.DoesNotExist:
             return Response({"error": "Holiday not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+class GetLeaveDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user  # Get the authenticated user
+
+        try:
+            # Get leave balance for the user
+            leave_balance = LeaveBalance.objects.get(user=user)
+
+            # Get the leave requests waiting for approval
+            pending_leaves = LeaveRequest.objects.filter(
+                user=user, status="Pending"
+            )
+
+            # Get the leave history (approved or rejected)
+            leave_history = LeaveRequest.objects.filter(
+                Q(user=user) & ~Q(status="Pending")
+            ).order_by('-applied_on')
+
+            # Prepare the response data
+            leave_details = {
+                "total_leaves": leave_balance.total_leaves,
+                "used_leaves": leave_balance.used_leaves,
+                "remaining_leaves": leave_balance.remaining_leaves,
+                "pending_leaves": [
+                    {
+                        "leave_id": leave.id,
+                        "start_date": leave.start_date,
+                        "end_date": leave.end_date,
+                        "reason": leave.reason,
+                        "applied_on": leave.applied_on,
+                    }
+                    for leave in pending_leaves
+                ],
+                "leave_history": [
+                    {
+                        "leave_id": leave.id,
+                        "start_date": leave.start_date,
+                        "end_date": leave.end_date,
+                        "reason": leave.reason,
+                        "status": leave.status,
+                        "approved_by": leave.approved_by.email if leave.approved_by else None,
+                        "applied_on": leave.applied_on,
+                    }
+                    for leave in leave_history
+                ],
+            }
+
+            return Response(leave_details, status=status.HTTP_200_OK)
+
+        except LeaveBalance.DoesNotExist:
+            return Response(
+                {"detail": "Leave balance not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    
+class ApplyLeaveView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user  # Get the authenticated user
+
+        # Get the leave details from the request
+        start_date_str = request.data.get("start_date")
+        end_date_str = request.data.get("end_date")
+        reason = request.data.get("reason")
+
+        # Validate the inputs
+        if not start_date_str or not end_date_str or not reason:
+            return Response(
+                {"detail": "Start date, end date, and reason are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Convert the date strings to datetime objects, then strip the time part
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+
+            # Get the leave balance for the user
+            leave_balance = LeaveBalance.objects.get(user=user)
+
+            # Calculate the number of days of leave requested
+            leave_days_requested = (end_date - start_date).days + 1
+
+            # Check if the user has enough remaining leaves
+            if leave_balance.remaining_leaves < leave_days_requested:
+                return Response(
+                    {"detail": "Insufficient leave balance."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Create the leave request object
+            leave_request = LeaveRequest.objects.create(
+                user=user,
+                start_date=start_date,
+                end_date=end_date,
+                reason=reason,
+                status="Pending",  # Initially, the leave request is pending approval
+            )
+
+            # Update the leave balance (deduct the used leave)
+            leave_balance.used_leaves += leave_days_requested
+            leave_balance.save()
+
+            # Return the response with the leave request details
+            return Response(
+                {
+                    "detail": "Leave applied successfully.",
+                    "leave_request": LeaveRequestSerializer(leave_request).data,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        except LeaveBalance.DoesNotExist:
+            return Response(
+                {"detail": "Leave balance not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+
+class UserReportsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get the logged-in user
+        user = request.user
+
+        # Get all users reporting to the logged-in user
+        reporting_users = UserDetails.objects.filter(reporting_manager=user)
+
+        # Prepare the response data
+        users_data = []
+        for user_details in reporting_users:
+            user_info = {
+                "email": user_details.user.email,
+                "first_name": user_details.user.first_name,
+                "last_name": user_details.user.last_name,
+                "employee_id": user_details.employee_id,
+                "position": user_details.position,
+                "leave_balance": {
+                    "total_leaves": user_details.user.leavebalance.total_leaves,
+                    "used_leaves": user_details.user.leavebalance.used_leaves,
+                    "remaining_leaves": user_details.user.leavebalance.remaining_leaves,
+                },
+                "leave_requests": []
+            }
+
+            # Get leave requests for this user
+            leave_requests = LeaveRequest.objects.filter(user=user_details.user)
+            leave_data = []
+            for leave_request in leave_requests:
+                leave_data.append({
+                    "leave_id":leave_request.id,
+                    "start_date": leave_request.start_date,
+                    "end_date": leave_request.end_date,
+                    "status": leave_request.status,
+                    "reason": leave_request.reason,
+                    "applied_on": leave_request.applied_on,
+                    "approved_by": leave_request.approved_by.email if leave_request.approved_by else None,
+                    "manager_comment": leave_request.manager_comment
+                })
+
+            user_info["leave_requests"] = leave_data
+            users_data.append(user_info)
+
+        return Response(users_data, status=status.HTTP_200_OK)
+    
+
+class ApproveLeaveView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+
+    def post(self, request, *args, **kwargs):
+        leave_id = request.data.get("leave_id")
+        manager_comment = request.data.get("manager_comment")
+
+        if not leave_id or not manager_comment:
+            return Response(
+                {"detail": "Leave ID and manager comment are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Retrieve the leave request by ID
+            leave_request = LeaveRequest.objects.get(id=leave_id)
+
+            # Check if the logged-in user is the manager of the user requesting leave
+            if leave_request.user.details.reporting_manager != request.user:
+                return Response(
+                    {"detail": "You are not authorized to approve this leave request."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Validate if the leave request is still pending
+            if leave_request.status != "Pending":
+                return Response(
+                    {"detail": "Leave request is already processed."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Validate leave days do not overlap with public holidays
+            holidays = PublicHoliday.objects.filter(date__range=(leave_request.start_date, leave_request.end_date))
+            if holidays.exists():
+                return Response(
+                    {"detail": "Leave cannot overlap with public holidays."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Ensure the leave request is within the available balance
+            leave_days = (leave_request.end_date - leave_request.start_date).days + 1
+            leave_balance = LeaveBalance.objects.get(user=leave_request.user)
+
+            if leave_days > leave_balance.remaining_leaves:
+                return Response(
+                    {"detail": "Insufficient leave balance."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Approve the leave and update the leave balance
+            leave_request.status = "Approved"
+            leave_request.manager_comment = manager_comment
+            leave_request.approved_by = request.user
+            leave_request.save()
+
+            # leave_balance.update_remaining_leaves(leave_days)  # Deduct the leaves from the balance
+
+            return Response(
+                {"detail": "Leave request approved successfully."},
+                status=status.HTTP_200_OK,
+            )
+
+        except ObjectDoesNotExist:
+            return Response(
+                {"detail": "Leave request not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except ValueError as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class RejectLeaveView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+
+    def post(self, request, *args, **kwargs):
+        leave_id = request.data.get("leave_id")
+        manager_comment = request.data.get("manager_comment")
+
+        if not leave_id or not manager_comment:
+            return Response(
+                {"detail": "Leave ID and manager comment are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Retrieve the leave request by ID
+            leave_request = get_object_or_404(LeaveRequest, id=leave_id)
+
+            # Check if the logged-in user is the manager of the user requesting leave
+            if leave_request.user.details.reporting_manager != request.user:
+                return Response(
+                    {"detail": "You are not authorized to reject this leave request."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Validate if the leave request is still pending
+            if leave_request.status != "Pending":
+                return Response(
+                    {"detail": "Leave request is already processed."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Reject the leave request and add the manager's comment
+            leave_request.status = "Rejected"
+            leave_request.manager_comment = manager_comment
+            leave_request.rejected_by = request.user
+            leave_request.save()
+
+            # Credit the leave back to the user's balance
+            leave_days = (leave_request.end_date - leave_request.start_date).days + 1
+            try:
+                leave_balance = LeaveBalance.objects.get(user=leave_request.user)
+                leave_balance.used_leaves -= leave_days  # Decrease used_leaves to credit the leave back
+                leave_balance.save()
+
+                return Response(
+                    {"detail": "Leave request rejected successfully, leave credited back to account."},
+                    status=status.HTTP_200_OK,
+                )
+            except LeaveBalance.DoesNotExist:
+                return Response(
+                    {"error": "Leave balance not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        except ObjectDoesNotExist:
+            return Response(
+                {"detail": "Leave request not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except ValueError as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+
+
+class CancelLeaveRequestView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+
+    def post(self, request, leave_request_id):
+        # Get the logged-in user
+        user = request.user
+
+        # Get the leave request by ID
+        leave_request = get_object_or_404(LeaveRequest, id=leave_request_id)
+
+        # Check if the leave request is in 'Pending' state
+        if leave_request.status != "Pending":
+            return Response({"error": "Leave request is not in 'Pending' state."}, status=400)
+
+        # Check if the logged-in user is the one who applied for the leave, or if the user is staff
+        if leave_request.user != user and not user.is_staff:
+            return Response({"error": "You do not have permission to cancel this leave request."}, status=403)
+
+        # Optionally, add back leave days to the user's balance
+        leave_days = (leave_request.end_date - leave_request.start_date).days + 1
+        try:
+            leave_balance = LeaveBalance.objects.get(user=leave_request.user)
+            leave_balance.used_leaves -= leave_days
+            leave_balance.save()
+
+            # Update the leave request status to "Cancelled"
+            leave_request.status = "Cancelled"
+            leave_request.save()
+
+            return Response({"message": "Leave request has been successfully cancelled."}, status=200)
+
+        except LeaveBalance.DoesNotExist:
+            return Response({"error": "Leave balance not found."}, status=404)

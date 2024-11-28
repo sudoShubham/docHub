@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Organization from "../components/Organization";
-import LeaveApprovals from "../components/LeaveApprovals";
 
 const MyOrganization = () => {
   const [activeSection, setActiveSection] = useState("organization"); // To track the active section
@@ -22,21 +21,13 @@ const MyOrganization = () => {
           >
             Organization
           </button>
-          <button
-            className={`w-full p-2 text-left rounded-md ${
-              activeSection === "leaveApprovals" ? "bg-sky-300" : "bg-white"
-            }`}
-            onClick={() => setActiveSection("leaveApprovals")}
-          >
-            Leave Approvals
-          </button>
         </div>
 
         {/* Main Content */}
         <div className="w-full md:w-3/4 p-6">
           {activeSection === "organization" && <Organization />}
 
-          {activeSection === "leaveApprovals" && <LeaveApprovals />}
+          {/* Add the PublicHolidays component */}
         </div>
       </div>
     </div>

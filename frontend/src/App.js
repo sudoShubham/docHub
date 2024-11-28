@@ -13,6 +13,9 @@ import Home from "./pages/Home";
 import AllUsersPage from "./pages/AllUsersPage";
 import ExportDataPage from "./pages/ExportDataPage";
 import MyOrganization from "./pages/MyOrganization";
+import HolidayManager from "./pages/HolidayManager";
+import MyLeaves from "./components/MyLeaves";
+import PublicHolidays from "./components/PublicHolidays";
 
 const App = () => {
   return (
@@ -62,6 +65,16 @@ const App = () => {
         <Route
           path="/my-organization"
           element={<PrivateRoute element={MyOrganization} />}
+        />
+
+        <Route
+          path="/holiday-manager"
+          element={<PrivateRoute element={HolidayManager} />}
+        />
+        <Route path="/leaves" element={<PrivateRoute element={MyLeaves} />} />
+        <Route
+          path="/holidays"
+          element={<PrivateRoute element={PublicHolidays} />}
         />
       </Routes>
     </Router>

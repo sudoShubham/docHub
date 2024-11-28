@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import User, UserDetails, PublicHoliday
+from .models import User, UserDetails, PublicHoliday, LeaveRequest
 
 class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
@@ -60,3 +60,9 @@ class PublicHolidaySerializer(serializers.ModelSerializer):
     class Meta:
         model = PublicHoliday
         fields = ['id', 'date', 'name', 'comment']
+        
+
+class LeaveRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeaveRequest
+        fields = ['id', 'start_date', 'end_date', 'reason', 'status', 'applied_on']
