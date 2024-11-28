@@ -48,9 +48,9 @@ const LeaveSummary = ({
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg p-6 shadow-lg mb-6">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">
         Leave Summary
-      </h3>
+      </h2>
 
       {/* Summary Section */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

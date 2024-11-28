@@ -1,8 +1,8 @@
-// src/components/PublicHolidays.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { API_BASE_URL } from "../config"; // Make sure you have your API base URL set
+import { API_BASE_URL } from "../config";
 import Navbar from "./Navbar";
+import BigCalendar from "../components/BigCalendar";
 
 const PublicHolidays = () => {
   const [holidays, setHolidays] = useState([]);
@@ -20,10 +20,16 @@ const PublicHolidays = () => {
             },
           }
         );
-        setHolidays(response.data);
-        setLoading(false);
+
+        // Sort holidays by date in ascending order
+        const sortedHolidays = response.data.sort(
+          (a, b) => new Date(a.date) - new Date(b.date)
+        );
+
+        setHolidays(sortedHolidays);
       } catch (err) {
-        setError("Failed to load holidays");
+        setError("Failed to load public holidays. Please try again later.");
+      } finally {
         setLoading(false);
       }
     };
@@ -33,9 +39,12 @@ const PublicHolidays = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-8">
-        <div className="text-xl text-gray-600 animate-pulse">
-          Loading holidays...
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div
+          role="status"
+          className="text-lg font-medium text-gray-600 animate-pulse"
+        >
+          Loading public holidays...
         </div>
       </div>
     );
@@ -43,40 +52,21 @@ const PublicHolidays = () => {
 
   if (error) {
     return (
-      <div className="text-red-600 font-semibold text-center py-8">{error}</div>
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center">
+          <p className="text-red-600 font-bold text-lg">{error}</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Try refreshing the page or check back later.
+          </p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <Navbar />
-      <div className="px-6 sm:px-8 lg:px-10 py-8">
-        <h2 className="text-2xl font-semibold text-black p-4 border-b-4 border-sky-300 inline-block mb-6">
-          Public Holidays
-        </h2>
-        <ul className="space-y-6">
-          {holidays.map((holiday) => (
-            <li
-              key={holiday.id}
-              className="bg-white border border-gray-200 rounded-lg shadow-md p-6 hover:bg-sky-50 transition duration-300 transform hover:scale-105"
-            >
-              <div className="flex justify-between items-center mb-4">
-                <div className="font-semibold text-xl text-gray-900">
-                  {holiday.name}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {new Date(holiday.date).toLocaleDateString()}
-                </div>
-              </div>
-              {holiday.comment && (
-                <div className="text-sm text-gray-700 mt-3 italic">
-                  <strong>Comment:</strong> {holiday.comment}
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <BigCalendar />;
     </div>
   );
 };
