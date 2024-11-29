@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import User, UserDetails, PublicHoliday, LeaveRequest
+from .models import User, UserDetails, PublicHoliday, LeaveRequest, Project, Timesheet
 
 class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
@@ -66,3 +66,32 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveRequest
         fields = ['id', 'start_date', 'end_date', 'reason', 'status', 'applied_on']
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    # Add a custom field to get the delivery manager's name
+    delivery_manager_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = ['id', 'project_name', 'project_code', 'delivery_manager_name', 'start_date', 'end_date']
+
+    def get_delivery_manager_name(self, obj):
+        # Check if a delivery manager is assigned and return their name
+        if obj.delivery_manager:
+            return f"{obj.delivery_manager.first_name} {obj.delivery_manager.last_name}"
+        return None  # If no delivery manager is assigned, return None
+    
+
+class TimesheetSerializer(serializers.ModelSerializer):
+    user_email = serializers.CharField(source='user.email')
+    project_name = serializers.CharField(source='project.project_name')
+    approved_by_email = serializers.CharField(source='approved_by.email', required=False)
+
+    class Meta:
+        model = Timesheet
+        fields = [
+            'id', 'user_email', 'project_name', 'date', 'hours_spent', 'description',
+            'is_approved', 'approved_by_email', 'approved_on', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']

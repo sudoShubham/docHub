@@ -16,6 +16,8 @@ import MyOrganization from "./pages/MyOrganization";
 import HolidayManager from "./pages/HolidayManager";
 import MyLeaves from "./components/MyLeaves";
 import PublicHolidays from "./components/PublicHolidays";
+import Timesheet from "./pages/Timesheet";
+import TimesheetSubmitPage from "./pages/TimesheetSubmitPage";
 
 const App = () => {
   return (
@@ -73,8 +75,17 @@ const App = () => {
         />
         <Route path="/leaves" element={<PrivateRoute element={MyLeaves} />} />
         <Route
+          path="/timesheet"
+          element={<PrivateRoute element={Timesheet} />}
+        />
+        <Route
           path="/holidays"
           element={<PrivateRoute element={PublicHolidays} />}
+        />
+
+        <Route
+          path="/timesheet/:projectId"
+          element={<PrivateRoute element={TimesheetSubmitPage} />}
         />
       </Routes>
     </Router>

@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from datetime import date, timedelta
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 
 # Custom UserManager
@@ -229,3 +230,50 @@ def initialize_leave_balance(sender, instance, created, **kwargs):
 post_save.connect(initialize_leave_balance, sender=User)
 
 
+class Project(models.Model):
+    users = models.ManyToManyField(User, related_name="projects", blank=True)
+    project_name = models.CharField(max_length=255)
+    project_code = models.CharField(max_length=50, unique=True)  # Unique project identifier
+    billing_rate = models.DecimalField(max_digits=10, decimal_places=2)  # Billing rate per hour
+    delivery_manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="managed_projects")
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['project_name']
+    
+    def __str__(self):
+        return f"{self.project_name} ({self.project_code})"
+    
+    
+class Timesheet(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="timesheets")
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="timesheets")
+    date = models.DateField()
+    hours_spent = models.DecimalField(max_digits=5, decimal_places=2)
+    description = models.TextField(null=True, blank=True)
+    is_approved = models.BooleanField(default=False)  # Indicates if the timesheet is approved
+    approved_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="approved_timesheets"
+    )  # Delivery manager who approved the timesheet
+    approved_on = models.DateTimeField(null=True, blank=True)  # Timestamp of approval
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date', 'project', 'user']
+
+    def approve(self, manager):
+        """
+        Approve the timesheet by a delivery manager.
+        """
+        if manager != self.project.delivery_manager:
+            raise ValueError("Only the assigned delivery manager can approve this timesheet.")
+        
+        self.is_approved = True
+        self.approved_by = manager
+        self.approved_on = timezone.now()
+        self.save()
+
+    def __str__(self):
+        return f"{self.user.email} - {self.project.project_name} ({self.date})"

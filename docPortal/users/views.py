@@ -10,10 +10,13 @@ from .google_drive_service import get_drive_service, get_or_create_folder, uploa
 from datetime import datetime
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, PublicHolidaySerializer, LeaveRequestSerializer
-from .models import User, UserDetails, PublicHoliday, LeaveBalance, LeaveRequest
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, PublicHolidaySerializer, LeaveRequestSerializer, ProjectSerializer, TimesheetSerializer
+from .models import User, UserDetails, PublicHoliday, LeaveBalance, LeaveRequest, Project, Timesheet
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.core.exceptions import ValidationError
+from rest_framework.exceptions import NotFound
+
 
 
 
@@ -1104,3 +1107,155 @@ class CancelLeaveRequestView(APIView):
 
         except LeaveBalance.DoesNotExist:
             return Response({"error": "Leave balance not found."}, status=404)
+        
+
+class UserProjectDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, id):
+        """
+        Fetch a specific project by ID for the logged-in user.
+        """
+        try:
+            # Get the project by ID and check if the logged-in user is assigned to it
+            project = Project.objects.get(id=id, users=request.user)
+        except Project.DoesNotExist:
+            raise NotFound("Project not found or you are not assigned to it.")
+        
+        # Serialize the project
+        serializer = ProjectSerializer(project)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+#Timesheet
+class UserProjectsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Fetch all projects assigned to the logged-in user.
+        """
+        user = request.user
+        projects = Project.objects.filter(users=user)  # Get all projects where the user is assigned
+        serializer = ProjectSerializer(projects, many=True)  # Serialize the projects
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class SubmitTimesheetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # Extract data from the request body
+        project_id = request.data.get("project")
+        date = request.data.get("date")
+        hours_spent = request.data.get("hours_spent")
+        description = request.data.get("description")
+
+        # Ensure all required fields are provided
+        if not project_id or not date or not hours_spent:
+            return Response({"error": "Project, date, and hours_spent are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate if the logged-in user is part of the project
+        user = request.user
+        try:
+            project = Project.objects.get(id=project_id)
+        except Project.DoesNotExist:
+            return Response({"error": "Project not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if user not in project.users.all():
+            return Response({"error": "You are not assigned to this project."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Create a new Timesheet entry
+        timesheet = Timesheet(
+            user=user,
+            project=project,
+            date=date,
+            hours_spent=hours_spent,
+            description=description
+        )
+
+        # Save the timesheet
+        try:
+            timesheet.save()
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Return the created timesheet details as the response
+        return Response({
+            "id": timesheet.id,
+            "user": timesheet.user.username,
+            "project": timesheet.project.project_name,
+            "date": timesheet.date,
+            "hours_spent": timesheet.hours_spent,
+            "description": timesheet.description,
+            "is_approved": timesheet.is_approved,
+            "approved_by": timesheet.approved_by.id if timesheet.approved_by else None,
+            "approved_on": timesheet.approved_on
+        }, status=status.HTTP_201_CREATED)
+    
+
+class UpdateTimesheetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        # Extract timesheet ID from URL
+        timesheet_id = kwargs.get('timesheet_id')
+
+        # Get the timesheet object
+        try:
+            timesheet = Timesheet.objects.get(id=timesheet_id)
+        except ObjectDoesNotExist:
+            return Response({"error": "Timesheet not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Ensure the logged-in user is the one who created the timesheet
+        if timesheet.user != request.user:
+            return Response({"error": "You can only update your own timesheet."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Check if the timesheet is already approved, and prevent modification of approved timesheets
+        if timesheet.is_approved:
+            return Response({"error": "Approved timesheets cannot be updated."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Extract the data from the request
+        hours_spent = request.data.get("hours_spent")
+        description = request.data.get("description")
+
+        # Update the fields if provided
+        if hours_spent is not None:
+            timesheet.hours_spent = hours_spent
+        if description is not None:
+            timesheet.description = description
+
+        # Save the updated timesheet
+        timesheet.save()
+
+        # Return the updated timesheet data in the response
+        response_data = {
+            "id": timesheet.id,
+            "user": timesheet.user.username,
+            "user_name": timesheet.user.get_full_name(),
+            "project": timesheet.project.id,
+            "date": timesheet.date,
+            "hours_spent": timesheet.hours_spent,
+            "description": timesheet.description,
+            "is_approved": timesheet.is_approved,
+            "approved_by": timesheet.approved_by.username if timesheet.approved_by else None,
+            "approved_on": timesheet.approved_on
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+    
+class TimesheetDetailsView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+
+    def get(self, request, project_id, format=None):
+        # Get the logged-in user
+        user = request.user
+        
+        # Filter timesheets by both project_id and logged-in user
+        timesheets = Timesheet.objects.filter(project_id=project_id, user=user).order_by('-date')
+
+        if not timesheets.exists():
+            return Response({"detail": "No timesheets found for this project and user."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Serialize the timesheet data
+        serializer = TimesheetSerializer(timesheets, many=True)
+        return Response(serializer.data)

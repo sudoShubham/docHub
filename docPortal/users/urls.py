@@ -1,6 +1,5 @@
 from django.urls import path
-from .views import RegisterView, LoginView, DocumentUploadView, UserDocumentsView, UpdatePasswordView, AllUserDocumentsView, FolderDocumentsView, UserProfileView, UpdateUserDetailsView, AllUserDetailsView, UpdateUserDetailsView, UpdateUserDetailsViewSelf, ReportingHierarchyView, PublicHolidayView, GetLeaveDetailsView, ApplyLeaveView, UserReportsView, ApproveLeaveView, CancelLeaveRequestView, RejectLeaveView
-
+from .views import RegisterView, LoginView, DocumentUploadView, UserDocumentsView, UpdatePasswordView, AllUserDocumentsView, FolderDocumentsView, UserProfileView, UpdateUserDetailsView, AllUserDetailsView, UpdateUserDetailsView, UpdateUserDetailsViewSelf, ReportingHierarchyView, PublicHolidayView, GetLeaveDetailsView, ApplyLeaveView, UserReportsView, ApproveLeaveView, CancelLeaveRequestView, RejectLeaveView, UserProjectsView, SubmitTimesheetView, UpdateTimesheetView, UserProjectDetailView, TimesheetDetailsView
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
@@ -22,4 +21,9 @@ urlpatterns = [
     path('approve-leave/', ApproveLeaveView.as_view(), name='approve-leave'),
     path('leave/reject/', RejectLeaveView.as_view(), name='reject_leave'),
     path('cancel-leave/<int:leave_request_id>/', CancelLeaveRequestView.as_view(), name='cancel_leave_request'),
+    path('projects/', UserProjectsView.as_view(), name='user-projects'),
+    path('timesheet/submit/', SubmitTimesheetView.as_view(), name='submit-timesheet'),
+    path('timesheet/update/<int:timesheet_id>/', UpdateTimesheetView.as_view(), name='update-timesheet'),
+    path('projects/<int:id>/', UserProjectDetailView.as_view(), name='user-project-detail'),
+    path('timesheet/details/<int:project_id>/', TimesheetDetailsView.as_view(), name='timesheet_details'),
 ]

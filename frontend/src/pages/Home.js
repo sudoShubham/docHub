@@ -82,6 +82,17 @@ const Home = () => {
                 </h3>
                 <p className="text-gray-600">See Holidays calendar here.</p>
               </Link>
+
+              {/* Feature 5 */}
+              <Link
+                to="/timesheet"
+                className="bg-white rounded-xl shadow-lg p-6 transition-transform transform hover:scale-105 hover:shadow-2xl hover:translate-y-1 ease-in-out duration-300"
+              >
+                <h3 className="text-xl font-semibold text-sky-600 mb-2">
+                  Project & Timesheet
+                </h3>
+                <p className="text-gray-600">Track your work here.</p>
+              </Link>
             </div>
           </div>
         </div>
