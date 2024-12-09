@@ -24,6 +24,10 @@ const AdminPage = () => {
   const handleHolidayManager = () => {
     navigate("/holiday-manager");
   };
+
+  const handleSalaryGeneration = () => {
+    navigate("/salary-generation");
+  };
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -67,6 +71,14 @@ const AdminPage = () => {
               className="bg-gradient-to-r from-blue-500 to-sky-400 text-white text-lg py-3 px-8 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-700 transform transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none"
             >
               Manage Holidays
+            </button>
+
+            {/* Button to Manage Holiday*/}
+            <button
+              onClick={handleSalaryGeneration}
+              className="bg-gradient-to-r from-blue-500 to-sky-400 text-white text-lg py-3 px-8 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-700 transform transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none"
+            >
+              Generate Salary Slips
             </button>
 
             {/* Button to Add New User */}

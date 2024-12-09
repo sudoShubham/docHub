@@ -18,6 +18,7 @@ import MyLeaves from "./components/MyLeaves";
 import PublicHolidays from "./components/PublicHolidays";
 import Timesheet from "./pages/Timesheet";
 import TimesheetSubmitPage from "./pages/TimesheetSubmitPage";
+import SalaryGeneration from "./pages/SalaryGeneration";
 
 const App = () => {
   return (
@@ -86,6 +87,11 @@ const App = () => {
         <Route
           path="/timesheet/:projectId"
           element={<PrivateRoute element={TimesheetSubmitPage} />}
+        />
+
+        <Route
+          path="/salary-generation"
+          element={<PrivateRoute element={SalaryGeneration} />}
         />
       </Routes>
     </Router>
