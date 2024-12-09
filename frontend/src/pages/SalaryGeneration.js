@@ -15,6 +15,12 @@ const SalaryGeneration = () => {
   const [totalCtcYearly, setTotalCtcYearly] = useState(0);
   const [netTakeHomeYearly, setNetTakeHomeYearly] = useState(0);
 
+  const [customDeductions, setCustomDeductions] = useState([]);
+  const [newDeduction, setNewDeduction] = useState({
+    description: "",
+    amount: 0,
+  });
+
   const employeePfYearly = 21600; // Fixed value
   const professionalTaxYearly = 2400; // Fixed value
 
@@ -54,6 +60,18 @@ const SalaryGeneration = () => {
     const netTakeHome =
       grossCompensation - (employeePfYearly + professionalTaxYearly);
     setNetTakeHomeYearly(netTakeHome);
+  };
+
+  // Handle adding a custom deduction
+  const handleAddDeduction = () => {
+    if (newDeduction.description && newDeduction.amount > 0) {
+      setCustomDeductions([...customDeductions, newDeduction]);
+      setNewDeduction({ description: "", amount: 0 });
+
+      const netTakeHome =
+        netTakeHomeYearly - (employeePfYearly + professionalTaxYearly);
+      setNetTakeHomeYearly(netTakeHome);
+    }
   };
 
   return (
@@ -167,6 +185,8 @@ const SalaryGeneration = () => {
               <h3 className="text-xl font-semibold text-gray-800 mt-8">
                 Deductions
               </h3>
+
+              {/* Deductions Table */}
               <div className="overflow-x-auto mt-5 bg-white shadow-lg rounded-lg">
                 <table className="table-auto w-full text-sm">
                   <thead className="bg-gray-200 text-gray-600">
@@ -178,6 +198,7 @@ const SalaryGeneration = () => {
                     </tr>
                   </thead>
                   <tbody>
+                    {/* Fixed Deductions */}
                     <tr className="border-t border-gray-100">
                       <td className="px-6 py-4">1</td>
                       <td className="px-6 py-4">Employee PF</td>
@@ -198,6 +219,21 @@ const SalaryGeneration = () => {
                         ₹{professionalTaxYearly.toFixed(2)}
                       </td>
                     </tr>
+
+                    {/* Custom Deductions */}
+                    {customDeductions.map((deduction, index) => (
+                      <tr className="border-t border-gray-100" key={index}>
+                        <td className="px-6 py-4">{index + 3}</td>
+                        <td className="px-6 py-4">{deduction.description}</td>
+                        <td className="px-6 py-4">
+                          ₹{(deduction.amount / 12).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4">
+                          ₹{deduction.amount.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+
                     <tr className="border-t border-gray-100 bg-gray-50">
                       <td
                         colSpan="2"
@@ -214,6 +250,55 @@ const SalaryGeneration = () => {
                     </tr>
                   </tbody>
                 </table>
+              </div>
+
+              {/* Add Custom Deduction Section */}
+              <div className="mt-4">
+                <label
+                  className="text-lg font-medium"
+                  htmlFor="customDescription"
+                >
+                  Custom Deduction Description:
+                </label>
+                <input
+                  type="text"
+                  id="customDescription"
+                  className="mt-2 p-3 border rounded-md w-full"
+                  placeholder="Enter deduction description"
+                  value={newDeduction.description}
+                  onChange={(e) =>
+                    setNewDeduction({
+                      ...newDeduction,
+                      description: e.target.value,
+                    })
+                  }
+                />
+                <label
+                  className="text-lg font-medium mt-4"
+                  htmlFor="customAmount"
+                >
+                  Amount:
+                </label>
+                <input
+                  type="number"
+                  id="customAmount"
+                  className="mt-2 p-3 border rounded-md w-full"
+                  placeholder="Enter deduction amount"
+                  value={newDeduction.amount}
+                  onChange={(e) =>
+                    setNewDeduction({
+                      ...newDeduction,
+                      amount: parseFloat(e.target.value),
+                    })
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={handleAddDeduction}
+                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md"
+                >
+                  Add Deduction
+                </button>
               </div>
             </div>
           )}
