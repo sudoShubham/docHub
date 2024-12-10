@@ -5,16 +5,17 @@ import { API_BASE_URL } from "../config";
 const SalaryGeneration = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [ctc, setCtc] = useState(0); // Added state for CTC
   const [earnings, setEarnings] = useState([
     { name: "Basic", amount: 0 },
     { name: "HRA", amount: 0 },
-    { name: "Conveyance Allowance", amount: 0 },
+    { name: "Conveyance Allowance", amount: 2000 },
     { name: "Statutory Bonus", amount: 0 },
     { name: "Special or Misc Allowance", amount: 0 },
   ]);
   const [deductions, setDeductions] = useState([
-    { name: "Employee Contribution to PF", amount: 0 },
-    { name: "Professional Tax", amount: 0 },
+    { name: "Employee Contribution to PF", amount: 1800 },
+    { name: "Professional Tax", amount: 200 },
   ]);
 
   useEffect(() => {
@@ -75,6 +76,44 @@ const SalaryGeneration = () => {
     return totalEarnings - totalDeductions;
   };
 
+  const handleCtcChange = (value) => {
+    const parsedCtc = parseFloat(value) || 0;
+    setCtc(parsedCtc);
+
+    // Calculate monthly values and round them to 2 decimal places
+    const basic = ((parsedCtc * 0.4) / 12).toFixed(2); // 40% of CTC, calculate monthly
+    const hra = (parseFloat(basic) * 0.5).toFixed(2); // 50% of Basic
+    const conveyanceAllowance = 2000; // Fixed amount
+    const statutoryBonus = (parseFloat(basic) * 0.0833).toFixed(2); // 8.33% of Basic
+    const employerPf = 1800; // Fixed Employer Contribution to PF
+    const gratuity = (parseFloat(basic) * 0.048).toFixed(2); // 4.8% of Basic
+
+    // Calculate special allowance as the remaining part of CTC after subtracting all other components
+    const monthlyCTC = (parsedCtc / 12).toFixed(2);
+    const specialAllowance = (
+      parseFloat(monthlyCTC) -
+      (parseFloat(basic) +
+        parseFloat(hra) +
+        conveyanceAllowance +
+        parseFloat(statutoryBonus) +
+        employerPf +
+        parseFloat(gratuity))
+    ).toFixed(2);
+
+    // Create updated earnings array with rounded values
+    const updatedEarnings = [
+      { name: "Basic", amount: parseFloat(basic) },
+      { name: "HRA", amount: parseFloat(hra) },
+      { name: "Conveyance Allowance", amount: conveyanceAllowance },
+      { name: "Statutory Bonus", amount: parseFloat(statutoryBonus) },
+      {
+        name: "Special or Misc Allowance",
+        amount: parseFloat(specialAllowance),
+      },
+    ];
+
+    setEarnings(updatedEarnings);
+  };
   return (
     <div className="bg-gray-100 min-h-screen">
       <Navbar />
@@ -112,6 +151,8 @@ const SalaryGeneration = () => {
               <h3 className="text-lg font-semibold text-gray-700 mb-4">
                 Employee Details
               </h3>
+              {/* Employee Details Section */}
+              {/* Same as before */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <p>
                   Employee Name:{" "}
@@ -189,85 +230,97 @@ const SalaryGeneration = () => {
             </div>
           )}
           <div className="mb-6">
+            <label
+              htmlFor="ctc-input"
+              className="block text-gray-700 font-medium mb-2"
+            >
+              Enter CTC
+            </label>
+            <input
+              type="number"
+              id="ctc-input"
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={ctc}
+              onChange={(e) => handleCtcChange(e.target.value)}
+              placeholder="Enter CTC"
+            />
+          </div>
+          <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">
               Earnings
+              <button
+                className="ml-4 px-3 py-1 bg-green-500 text-white rounded-lg text-sm"
+                onClick={() => addField("earning")}
+              >
+                Add Earning
+              </button>
             </h3>
             {earnings.map((earning, index) => (
               <div key={index} className="flex items-center mb-2">
                 <input
                   type="text"
+                  className="w-1/2 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
                   value={earning.name}
                   onChange={(e) =>
                     handleEarningsChange(index, "name", e.target.value)
                   }
-                  placeholder="Earning Name"
-                  className="flex-1 border border-gray-300 rounded-l-lg p-2"
                 />
                 <input
                   type="number"
+                  className="w-1/2 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
                   value={earning.amount}
                   onChange={(e) =>
                     handleEarningsChange(index, "amount", e.target.value)
                   }
-                  placeholder="Amount"
-                  className="flex-1 border-t border-b border-gray-300 p-2"
                 />
                 <button
+                  className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm"
                   onClick={() => removeField("earning", index)}
-                  className="bg-red-500 text-white px-4 py-2 rounded-r-lg hover:bg-red-600"
                 >
                   Remove
                 </button>
               </div>
             ))}
-            <button
-              onClick={() => addField("earning")}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2"
-            >
-              Add Earning
-            </button>
           </div>
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">
               Deductions
+              <button
+                className="ml-4 px-3 py-1 bg-green-500 text-white rounded-lg text-sm"
+                onClick={() => addField("deduction")}
+              >
+                Add Deduction
+              </button>
             </h3>
             {deductions.map((deduction, index) => (
               <div key={index} className="flex items-center mb-2">
                 <input
                   type="text"
+                  className="w-1/2 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
                   value={deduction.name}
                   onChange={(e) =>
                     handleDeductionsChange(index, "name", e.target.value)
                   }
-                  placeholder="Deduction Name"
-                  className="flex-1 border border-gray-300 rounded-l-lg p-2"
                 />
                 <input
                   type="number"
+                  className="w-1/2 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
                   value={deduction.amount}
                   onChange={(e) =>
                     handleDeductionsChange(index, "amount", e.target.value)
                   }
-                  placeholder="Amount"
-                  className="flex-1 border-t border-b border-gray-300 p-2"
                 />
                 <button
+                  className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm"
                   onClick={() => removeField("deduction", index)}
-                  className="bg-red-500 text-white px-4 py-2 rounded-r-lg hover:bg-red-600"
                 >
                   Remove
                 </button>
               </div>
             ))}
-            <button
-              onClick={() => addField("deduction")}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2"
-            >
-              Add Deduction
-            </button>
           </div>
-          <div className="bg-gray-50 p-4 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold text-gray-800">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">
               Net Salary: ₹{calculateNetSalary().toFixed(2)}
             </h3>
           </div>
