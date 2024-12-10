@@ -35,6 +35,27 @@ const SalaryGeneration = () => {
       .catch((error) => console.error("Error fetching user details:", error));
   }, []);
 
+  useEffect(() => {
+    if (salaryMonth) {
+      // Calculate the number of days in the selected month using salaryMonth
+      const daysInMonth = new Date(
+        salaryMonth.substring(0, 4), // Year from salaryMonth (YYYY)
+        salaryMonth.substring(5, 7), // Month from salaryMonth (MM)
+        0
+      ).getDate(); // Get the last day of the month to determine the number of days
+
+      setPaidDays(daysInMonth); // Set default Paid Days to the number of days in the month
+    }
+  }, [salaryMonth]);
+
+  useEffect(() => {
+    if (lopDays > 0) {
+      setPaidDays((prevPaidDays) => prevPaidDays - lopDays); // Adjust Paid Days based on LOP Days
+    } else {
+      setPaidDays(0); // Reset Paid Days if LOP is zero
+    }
+  }, [lopDays]);
+
   const handleUserChange = (e) => {
     const userId = e.target.value;
     const user = users.find((user) => user.details.employee_id === userId);
@@ -79,7 +100,19 @@ const SalaryGeneration = () => {
       (sum, item) => sum + item.amount,
       0
     );
-    return totalEarnings - totalDeductions;
+
+    // Calculate the number of days in the selected month using salaryMonth
+    const daysInMonth = new Date(
+      salaryMonth.substring(0, 4), // Year from salaryMonth (YYYY)
+      salaryMonth.substring(5, 7), // Month from salaryMonth (MM)
+      0
+    ).getDate(); // Get the last day of the month to determine the number of days
+
+    // Calculate loss of pay (LOP) if LOP days are greater than 0
+    const lopAmount = lopDays > 0 ? (lopDays / daysInMonth) * totalEarnings : 0;
+
+    // Return the final net salary after deductions and LOP
+    return totalEarnings - totalDeductions - lopAmount;
   };
 
   const handleCtcChange = (value) => {
