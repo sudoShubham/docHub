@@ -18,6 +18,12 @@ const SalaryGeneration = () => {
     { name: "Professional Tax", amount: 200 },
   ]);
 
+  // New state for Salary Date, Salary Month, Paid Days, LOP Days
+  const [salaryDate, setSalaryDate] = useState("");
+  const [salaryMonth, setSalaryMonth] = useState("");
+  const [paidDays, setPaidDays] = useState(0);
+  const [lopDays, setLopDays] = useState(0);
+
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/users/admin/user-details/`, {
       headers: {
@@ -244,6 +250,69 @@ const SalaryGeneration = () => {
               onChange={(e) => handleCtcChange(e.target.value)}
               placeholder="Enter CTC"
             />
+          </div>
+          {/* Salary Date, Salary Month, Paid Days, LOP Days Inputs */}
+          <div className="mb-6 grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="salary-date"
+                className="block text-gray-700 font-medium mb-2"
+              >
+                Salary Date
+              </label>
+              <input
+                type="date"
+                id="salary-date"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={salaryDate}
+                onChange={(e) => setSalaryDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="salary-month"
+                className="block text-gray-700 font-medium mb-2"
+              >
+                Salary Month
+              </label>
+              <input
+                type="month"
+                id="salary-month"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={salaryMonth}
+                onChange={(e) => setSalaryMonth(e.target.value)}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="paid-days"
+                className="block text-gray-700 font-medium mb-2"
+              >
+                Paid Days
+              </label>
+              <input
+                type="number"
+                id="paid-days"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={paidDays}
+                onChange={(e) => setPaidDays(e.target.value)}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="lop-days"
+                className="block text-gray-700 font-medium mb-2"
+              >
+                LOP Days
+              </label>
+              <input
+                type="number"
+                id="lop-days"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={lopDays}
+                onChange={(e) => setLopDays(e.target.value)}
+              />
+            </div>
           </div>
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">
