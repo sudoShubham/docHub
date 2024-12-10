@@ -154,10 +154,10 @@ const SalaryGeneration = () => {
     setEarnings(updatedEarnings);
   };
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="min-h-screen">
       <Navbar />
       <div className="container mx-auto p-6">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-sky-400 inline-block">
           Salary Slip Generation
         </h2>
         <div className="bg-white p-6 rounded-lg shadow-md">
