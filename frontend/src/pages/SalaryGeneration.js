@@ -1,307 +1,276 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import { API_BASE_URL } from "../config";
 
 const SalaryGeneration = () => {
-  const [ctc, setCtc] = useState("");
-  const [basicYearly, setBasicYearly] = useState(0);
-  const [hraYearly, setHraYearly] = useState(0);
-  const [conveyanceAllowanceYearly, setConveyanceAllowanceYearly] =
-    useState(24000); // Fixed
-  const [statutoryBonusYearly, setStatutoryBonusYearly] = useState(0);
-  const [specialAllowanceYearly, setSpecialAllowanceYearly] = useState(0);
-  const [employerPfYearly, setEmployerPfYearly] = useState(21600); // Fixed
-  const [gratuityYearly, setGratuityYearly] = useState(0);
-  const [totalGrossYearly, setTotalGrossYearly] = useState(0);
-  const [totalCtcYearly, setTotalCtcYearly] = useState(0);
-  const [netTakeHomeYearly, setNetTakeHomeYearly] = useState(0);
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [earnings, setEarnings] = useState([
+    { name: "Basic", amount: 0 },
+    { name: "HRA", amount: 0 },
+    { name: "Conveyance Allowance", amount: 0 },
+    { name: "Statutory Bonus", amount: 0 },
+    { name: "Special or Misc Allowance", amount: 0 },
+  ]);
+  const [deductions, setDeductions] = useState([
+    { name: "Employee Contribution to PF", amount: 0 },
+    { name: "Professional Tax", amount: 0 },
+  ]);
 
-  const [customDeductions, setCustomDeductions] = useState([]);
-  const [newDeduction, setNewDeduction] = useState({
-    description: "",
-    amount: 0,
-  });
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/users/admin/user-details/`, {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => setUsers(data.user_details))
+      .catch((error) => console.error("Error fetching user details:", error));
+  }, []);
 
-  const employeePfYearly = 21600; // Fixed value
-  const professionalTaxYearly = 2400; // Fixed value
-
-  // Handles CTC input change
-  const handleCtcChange = (event) => {
-    const enteredCtc = parseFloat(event.target.value) || 0;
-    setCtc(enteredCtc);
-
-    // Calculate components
-    const basic = (enteredCtc * 40) / 100; // 40% of CTC
-    const hra = (basic * 50) / 100; // 50% of Basic
-    const statutoryBonus = (basic * 8.33) / 100; // 8.33% of Basic
-    const gratuity = (basic * 4.8) / 100; // 4.8% of Basic
-    const totalFixedYearly =
-      basic + hra + conveyanceAllowanceYearly + statutoryBonus;
-    const specialAllowance =
-      enteredCtc - (totalFixedYearly + employerPfYearly + gratuity);
-
-    // Set values
-    setBasicYearly(basic);
-    setHraYearly(hra);
-    setStatutoryBonusYearly(statutoryBonus);
-    setGratuityYearly(gratuity);
-    setSpecialAllowanceYearly(specialAllowance);
-
-    // Calculate totals
-    const grossCompensation =
-      basic +
-      hra +
-      conveyanceAllowanceYearly +
-      statutoryBonus +
-      specialAllowance;
-    setTotalGrossYearly(grossCompensation);
-    setTotalCtcYearly(enteredCtc);
-
-    // Calculate net take-home salary
-    const netTakeHome =
-      grossCompensation - (employeePfYearly + professionalTaxYearly);
-    setNetTakeHomeYearly(netTakeHome);
+  const handleUserChange = (e) => {
+    const userId = e.target.value;
+    const user = users.find((user) => user.details.employee_id === userId);
+    setSelectedUser(user);
   };
 
-  // Handle adding a custom deduction
-  const handleAddDeduction = () => {
-    if (newDeduction.description && newDeduction.amount > 0) {
-      setCustomDeductions([...customDeductions, newDeduction]);
-      setNewDeduction({ description: "", amount: 0 });
+  const handleEarningsChange = (index, field, value) => {
+    const updatedEarnings = [...earnings];
+    updatedEarnings[index][field] =
+      field === "amount" ? parseFloat(value) || 0 : value;
+    setEarnings(updatedEarnings);
+  };
 
-      const netTakeHome =
-        netTakeHomeYearly - (employeePfYearly + professionalTaxYearly);
-      setNetTakeHomeYearly(netTakeHome);
+  const handleDeductionsChange = (index, field, value) => {
+    const updatedDeductions = [...deductions];
+    updatedDeductions[index][field] =
+      field === "amount" ? parseFloat(value) || 0 : value;
+    setDeductions(updatedDeductions);
+  };
+
+  const addField = (type) => {
+    if (type === "earning") {
+      setEarnings([...earnings, { name: "", amount: 0 }]);
+    } else {
+      setDeductions([...deductions, { name: "", amount: 0 }]);
     }
   };
 
+  const removeField = (type, index) => {
+    if (type === "earning") {
+      const updatedEarnings = earnings.filter((_, i) => i !== index);
+      setEarnings(updatedEarnings);
+    } else {
+      const updatedDeductions = deductions.filter((_, i) => i !== index);
+      setDeductions(updatedDeductions);
+    }
+  };
+
+  const calculateNetSalary = () => {
+    const totalEarnings = earnings.reduce((sum, item) => sum + item.amount, 0);
+    const totalDeductions = deductions.reduce(
+      (sum, item) => sum + item.amount,
+      0
+    );
+    return totalEarnings - totalDeductions;
+  };
+
   return (
-    <div>
+    <div className="bg-gray-100 min-h-screen">
       <Navbar />
-      <div className="container mx-auto mt-10">
-        <div className="bg-white shadow-lg rounded-lg p-8">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            Generate Salary Slip
-          </h2>
-          <div className="form-group mt-6">
-            <label htmlFor="ctcInput" className="text-lg font-medium">
-              Enter CTC:
+      <div className="container mx-auto p-6">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          Salary Slip Generation
+        </h2>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="mb-4">
+            <label
+              htmlFor="user-select"
+              className="block text-gray-700 font-medium mb-2"
+            >
+              Select Employee
             </label>
-            <input
-              type="number"
-              id="ctcInput"
-              className="form-control mt-2 p-3 border rounded-md w-full"
-              placeholder="Enter CTC amount"
-              value={ctc}
-              onChange={handleCtcChange}
-            />
+            <select
+              id="user-select"
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={handleUserChange}
+            >
+              <option value="">-- Select Employee --</option>
+              {users.map((user) => (
+                <option
+                  key={user.details.employee_id}
+                  value={user.details.employee_id}
+                >
+                  {user.user.first_name} {user.user.last_name} (
+                  {user.details.employee_id})
+                </option>
+              ))}
+            </select>
           </div>
-
-          {ctc > 0 && (
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold text-gray-800">
-                Salary Breakdown
+          {selectedUser && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                Employee Details
               </h3>
-              <div className="overflow-x-auto mt-5 bg-white shadow-lg rounded-lg">
-                <table className="table-auto w-full text-sm">
-                  <thead className="bg-gray-200 text-gray-600">
-                    <tr>
-                      <th className="px-6 py-4 text-left">Sr. No.</th>
-                      <th className="px-6 py-4 text-left">Description</th>
-                      <th className="px-6 py-4 text-left">Monthly</th>
-                      <th className="px-6 py-4 text-left">Yearly</th>
-                      <th className="px-6 py-4 text-left">Remarks</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-t border-gray-100">
-                      <td className="px-6 py-4">1</td>
-                      <td className="px-6 py-4">Basic</td>
-                      <td className="px-6 py-4">
-                        ₹{(basicYearly / 12).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">₹{basicYearly.toFixed(2)}</td>
-                      <td className="px-6 py-4">40% of CTC</td>
-                    </tr>
-                    <tr className="border-t border-gray-100">
-                      <td className="px-6 py-4">2</td>
-                      <td className="px-6 py-4">HRA</td>
-                      <td className="px-6 py-4">
-                        ₹{(hraYearly / 12).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">₹{hraYearly.toFixed(2)}</td>
-                      <td className="px-6 py-4">50% of Basic</td>
-                    </tr>
-                    <tr className="border-t border-gray-100">
-                      <td className="px-6 py-4">3</td>
-                      <td className="px-6 py-4">Conveyance Allowance</td>
-                      <td className="px-6 py-4">
-                        ₹{(conveyanceAllowanceYearly / 12).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">
-                        ₹{conveyanceAllowanceYearly.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">Fixed</td>
-                    </tr>
-                    <tr className="border-t border-gray-100">
-                      <td className="px-6 py-4">4</td>
-                      <td className="px-6 py-4">Statutory Bonus</td>
-                      <td className="px-6 py-4">
-                        ₹{(statutoryBonusYearly / 12).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">
-                        ₹{statutoryBonusYearly.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">8.33% of Basic</td>
-                    </tr>
-                    <tr className="border-t border-gray-100">
-                      <td className="px-6 py-4">5</td>
-                      <td className="px-6 py-4">Special Allowance</td>
-                      <td className="px-6 py-4">
-                        ₹{(specialAllowanceYearly / 12).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">
-                        ₹{specialAllowanceYearly.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">Remaining Amount</td>
-                    </tr>
-                    <tr className="border-t border-gray-100 bg-gray-50">
-                      <td
-                        colSpan="2"
-                        className="px-6 py-4 font-semibold text-gray-800"
-                      >
-                        Total Gross Compensation
-                      </td>
-                      <td className="px-6 py-4 font-semibold">
-                        ₹{(totalGrossYearly / 12).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 font-semibold">
-                        ₹{totalGrossYearly.toFixed(2)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <h3 className="text-xl font-semibold text-gray-800 mt-8">
-                Deductions
-              </h3>
-
-              {/* Deductions Table */}
-              <div className="overflow-x-auto mt-5 bg-white shadow-lg rounded-lg">
-                <table className="table-auto w-full text-sm">
-                  <thead className="bg-gray-200 text-gray-600">
-                    <tr>
-                      <th className="px-6 py-4 text-left">Sr. No.</th>
-                      <th className="px-6 py-4 text-left">Description</th>
-                      <th className="px-6 py-4 text-left">Monthly</th>
-                      <th className="px-6 py-4 text-left">Yearly</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Fixed Deductions */}
-                    <tr className="border-t border-gray-100">
-                      <td className="px-6 py-4">1</td>
-                      <td className="px-6 py-4">Employee PF</td>
-                      <td className="px-6 py-4">
-                        ₹{(employeePfYearly / 12).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">
-                        ₹{employeePfYearly.toFixed(2)}
-                      </td>
-                    </tr>
-                    <tr className="border-t border-gray-100">
-                      <td className="px-6 py-4">2</td>
-                      <td className="px-6 py-4">Professional Tax</td>
-                      <td className="px-6 py-4">
-                        ₹{(professionalTaxYearly / 12).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">
-                        ₹{professionalTaxYearly.toFixed(2)}
-                      </td>
-                    </tr>
-
-                    {/* Custom Deductions */}
-                    {customDeductions.map((deduction, index) => (
-                      <tr className="border-t border-gray-100" key={index}>
-                        <td className="px-6 py-4">{index + 3}</td>
-                        <td className="px-6 py-4">{deduction.description}</td>
-                        <td className="px-6 py-4">
-                          ₹{(deduction.amount / 12).toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4">
-                          ₹{deduction.amount.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-
-                    <tr className="border-t border-gray-100 bg-gray-50">
-                      <td
-                        colSpan="2"
-                        className="px-6 py-4 font-semibold text-gray-800"
-                      >
-                        Net Take Home
-                      </td>
-                      <td className="px-6 py-4 font-semibold">
-                        ₹{(netTakeHomeYearly / 12).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 font-semibold">
-                        ₹{netTakeHomeYearly.toFixed(2)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Add Custom Deduction Section */}
-              <div className="mt-4">
-                <label
-                  className="text-lg font-medium"
-                  htmlFor="customDescription"
-                >
-                  Custom Deduction Description:
-                </label>
-                <input
-                  type="text"
-                  id="customDescription"
-                  className="mt-2 p-3 border rounded-md w-full"
-                  placeholder="Enter deduction description"
-                  value={newDeduction.description}
-                  onChange={(e) =>
-                    setNewDeduction({
-                      ...newDeduction,
-                      description: e.target.value,
-                    })
-                  }
-                />
-                <label
-                  className="text-lg font-medium mt-4"
-                  htmlFor="customAmount"
-                >
-                  Amount:
-                </label>
-                <input
-                  type="number"
-                  id="customAmount"
-                  className="mt-2 p-3 border rounded-md w-full"
-                  placeholder="Enter deduction amount"
-                  value={newDeduction.amount}
-                  onChange={(e) =>
-                    setNewDeduction({
-                      ...newDeduction,
-                      amount: parseFloat(e.target.value),
-                    })
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={handleAddDeduction}
-                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md"
-                >
-                  Add Deduction
-                </button>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <p>
+                  Employee Name:{" "}
+                  <span className="font-medium">
+                    {selectedUser.user.first_name} {selectedUser.user.last_name}
+                  </span>
+                </p>
+                <p>
+                  Employee ID:{" "}
+                  <span className="font-medium">
+                    {selectedUser.details.employee_id}
+                  </span>
+                </p>
+                <p>
+                  Designation:{" "}
+                  <span className="font-medium">
+                    {selectedUser.details.position || "N/A"}
+                  </span>
+                </p>
+                <p>
+                  Department:{" "}
+                  <span className="font-medium">
+                    {selectedUser.details.job_profile || "N/A"}
+                  </span>
+                </p>
+                <p>
+                  Date of Joining:{" "}
+                  <span className="font-medium">
+                    {selectedUser.details.hire_date || "N/A"}
+                  </span>
+                </p>
+                <p>
+                  Work Location:{" "}
+                  <span className="font-medium">
+                    {selectedUser.details.location || "N/A"}
+                  </span>
+                </p>
+                <p>
+                  Bank Name:{" "}
+                  <span className="font-medium">
+                    {selectedUser.details.bank_account_name || "N/A"}
+                  </span>
+                </p>
+                <p>
+                  Bank Account Number:{" "}
+                  <span className="font-medium">
+                    {selectedUser.details.bank_account_number || "N/A"}
+                  </span>
+                </p>
+                <p>
+                  UAN Number:{" "}
+                  <span className="font-medium">
+                    {selectedUser.details.pf_uan_no || "N/A"}
+                  </span>
+                </p>
+                <p>
+                  Aadhar Number:{" "}
+                  <span className="font-medium">
+                    {selectedUser.details.aadhar_number || "N/A"}
+                  </span>
+                </p>
+                <p>
+                  PAN Number:{" "}
+                  <span className="font-medium">
+                    {selectedUser.details.pan_no || "N/A"}
+                  </span>
+                </p>
+                <p>
+                  PF Number:{" "}
+                  <span className="font-medium">
+                    {selectedUser.details.pf_no || "N/A"}
+                  </span>
+                </p>
               </div>
             </div>
           )}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">
+              Earnings
+            </h3>
+            {earnings.map((earning, index) => (
+              <div key={index} className="flex items-center mb-2">
+                <input
+                  type="text"
+                  value={earning.name}
+                  onChange={(e) =>
+                    handleEarningsChange(index, "name", e.target.value)
+                  }
+                  placeholder="Earning Name"
+                  className="flex-1 border border-gray-300 rounded-l-lg p-2"
+                />
+                <input
+                  type="number"
+                  value={earning.amount}
+                  onChange={(e) =>
+                    handleEarningsChange(index, "amount", e.target.value)
+                  }
+                  placeholder="Amount"
+                  className="flex-1 border-t border-b border-gray-300 p-2"
+                />
+                <button
+                  onClick={() => removeField("earning", index)}
+                  className="bg-red-500 text-white px-4 py-2 rounded-r-lg hover:bg-red-600"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => addField("earning")}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2"
+            >
+              Add Earning
+            </button>
+          </div>
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">
+              Deductions
+            </h3>
+            {deductions.map((deduction, index) => (
+              <div key={index} className="flex items-center mb-2">
+                <input
+                  type="text"
+                  value={deduction.name}
+                  onChange={(e) =>
+                    handleDeductionsChange(index, "name", e.target.value)
+                  }
+                  placeholder="Deduction Name"
+                  className="flex-1 border border-gray-300 rounded-l-lg p-2"
+                />
+                <input
+                  type="number"
+                  value={deduction.amount}
+                  onChange={(e) =>
+                    handleDeductionsChange(index, "amount", e.target.value)
+                  }
+                  placeholder="Amount"
+                  className="flex-1 border-t border-b border-gray-300 p-2"
+                />
+                <button
+                  onClick={() => removeField("deduction", index)}
+                  className="bg-red-500 text-white px-4 py-2 rounded-r-lg hover:bg-red-600"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => addField("deduction")}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2"
+            >
+              Add Deduction
+            </button>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-lg shadow-md">
+            <h3 className="text-xl font-bold text-gray-800">
+              Net Salary: ₹{calculateNetSalary().toFixed(2)}
+            </h3>
+          </div>
         </div>
       </div>
     </div>
