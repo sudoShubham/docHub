@@ -211,24 +211,14 @@ const SalaryGeneration = () => {
                     {selectedUser.details.position || "N/A"}
                   </span>
                 </p>
-                <p>
-                  Department:{" "}
-                  <span className="font-medium">
-                    {selectedUser.details.job_profile || "N/A"}
-                  </span>
-                </p>
+
                 <p>
                   Date of Joining:{" "}
                   <span className="font-medium">
                     {selectedUser.details.hire_date || "N/A"}
                   </span>
                 </p>
-                <p>
-                  Work Location:{" "}
-                  <span className="font-medium">
-                    {selectedUser.details.location || "N/A"}
-                  </span>
-                </p>
+
                 <p>
                   Bank Name:{" "}
                   <span className="font-medium">
@@ -347,83 +337,91 @@ const SalaryGeneration = () => {
               />
             </div>
           </div>
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">
-              Earnings
-              <button
-                className="ml-4 px-3 py-1 bg-green-500 text-white rounded-lg text-sm"
-                onClick={() => addField("earning")}
-              >
-                Add Earning
-              </button>
-            </h3>
-            {earnings.map((earning, index) => (
-              <div key={index} className="flex items-center mb-2">
-                <input
-                  type="text"
-                  className="w-1/2 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
-                  value={earning.name}
-                  onChange={(e) =>
-                    handleEarningsChange(index, "name", e.target.value)
-                  }
-                />
-                <input
-                  type="number"
-                  className="w-1/2 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
-                  value={earning.amount}
-                  onChange={(e) =>
-                    handleEarningsChange(index, "amount", e.target.value)
-                  }
-                />
+
+          {/* Earnings and Deductions in two columns */}
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            {/* Earnings Column */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                Earnings
                 <button
-                  className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm"
-                  onClick={() => removeField("earning", index)}
+                  className="ml-4 px-3 py-1 bg-green-500 text-white rounded-lg text-sm"
+                  onClick={() => addField("earning")}
                 >
-                  Remove
+                  Add Earning
                 </button>
-              </div>
-            ))}
-          </div>
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">
-              Deductions
-              <button
-                className="ml-4 px-3 py-1 bg-green-500 text-white rounded-lg text-sm"
-                onClick={() => addField("deduction")}
-              >
-                Add Deduction
-              </button>
-            </h3>
-            {deductions.map((deduction, index) => (
-              <div key={index} className="flex items-center mb-2">
-                <input
-                  type="text"
-                  className="w-1/2 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
-                  value={deduction.name}
-                  onChange={(e) =>
-                    handleDeductionsChange(index, "name", e.target.value)
-                  }
-                />
-                <input
-                  type="number"
-                  className="w-1/2 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
-                  value={deduction.amount}
-                  onChange={(e) =>
-                    handleDeductionsChange(index, "amount", e.target.value)
-                  }
-                />
+              </h3>
+              {earnings.map((earning, index) => (
+                <div key={index} className="flex items-center mb-2">
+                  <input
+                    type="text"
+                    className="w-3/4 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
+                    value={earning.name}
+                    onChange={(e) =>
+                      handleEarningsChange(index, "name", e.target.value)
+                    }
+                  />
+                  <input
+                    type="number"
+                    className="w-1/4 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
+                    value={earning.amount}
+                    onChange={(e) =>
+                      handleEarningsChange(index, "amount", e.target.value)
+                    }
+                  />
+                  <button
+                    className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm"
+                    onClick={() => removeField("earning", index)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Deductions Column */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                Deductions
                 <button
-                  className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm"
-                  onClick={() => removeField("deduction", index)}
+                  className="ml-4 px-3 py-1 bg-green-500 text-white rounded-lg text-sm"
+                  onClick={() => addField("deduction")}
                 >
-                  Remove
+                  Add Deduction
                 </button>
-              </div>
-            ))}
+              </h3>
+              {deductions.map((deduction, index) => (
+                <div key={index} className="flex items-center mb-2">
+                  <input
+                    type="text"
+                    className="w-3/4 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
+                    value={deduction.name}
+                    onChange={(e) =>
+                      handleDeductionsChange(index, "name", e.target.value)
+                    }
+                  />
+                  <input
+                    type="number"
+                    className="w-1/4 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
+                    value={deduction.amount}
+                    onChange={(e) =>
+                      handleDeductionsChange(index, "amount", e.target.value)
+                    }
+                  />
+                  <button
+                    className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm"
+                    onClick={() => removeField("deduction", index)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
+
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">
-              Net Salary: ₹{calculateNetSalary().toFixed(2)}
+              Net Monthly Salary: ₹{calculateNetSalary().toFixed(2)}
             </h3>
           </div>
         </div>
