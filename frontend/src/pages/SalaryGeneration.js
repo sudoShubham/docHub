@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { API_BASE_URL } from "../config";
+import axios from "axios"; // Import axios
 
 const SalaryGeneration = () => {
   const [users, setUsers] = useState([]);
@@ -55,6 +56,104 @@ const SalaryGeneration = () => {
       setPaidDays(0); // Reset Paid Days if LOP is zero
     }
   }, [lopDays]);
+
+  // const handleExportToPdf = async () => {
+  //   try {
+  //     const payload = {
+  //       userDetails: {
+  //         name: `${selectedUser.user.first_name} ${selectedUser.user.last_name}`,
+  //         employee_id: selectedUser.details.employee_id,
+  //         designation: selectedUser.details.position,
+  //         date_of_joining: selectedUser.details.hire_date,
+  //         bank_name: selectedUser.details.bank_account_name,
+  //         bank_account_number: selectedUser.details.bank_account_number,
+  //         uan_number: selectedUser.details.pf_uan_no,
+  //         pf_number: selectedUser.details.pf_no,
+  //         pan_no: selectedUser.details.pan_no,
+  //         aadhar_number: selectedUser.details.aadhar_number,
+  //       },
+  //       ctc,
+  //       salaryDate,
+  //       salaryMonth,
+  //       paidDays,
+  //       lopDays,
+  //       earnings,
+  //       deductions,
+  //       netSalary: calculateNetSalary(),
+  //     };
+
+  //     const response = await axios.post(
+  //       `${API_BASE_URL}/api/users/generate-pdf/`,
+  //       payload,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+  //         },
+  //         responseType: "blob", // Important for handling files
+  //       }
+  //     );
+
+  //     // Create a URL for the PDF file
+  //     const url = window.URL.createObjectURL(new Blob([response.data]));
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.setAttribute("download", "salary_slip.pdf"); // Name for the downloaded file
+  //     document.body.appendChild(link);
+  //     link.click(); // Trigger download
+  //     link.remove(); // Clean up
+  //   } catch (error) {
+  //     console.error("Error exporting PDF:", error);
+  //   }
+  // };
+
+  const handleExportToHtml = async () => {
+    try {
+      const payload = {
+        userDetails: {
+          name: `${selectedUser.user.first_name} ${selectedUser.user.last_name}`,
+          employee_id: selectedUser.details.employee_id,
+          designation: selectedUser.details.position,
+          date_of_joining: selectedUser.details.hire_date,
+          bank_name: selectedUser.details.bank_account_name,
+          bank_account_number: selectedUser.details.bank_account_number,
+          uan_number: selectedUser.details.pf_uan_no,
+          pf_number: selectedUser.details.pf_no,
+          pan_no: selectedUser.details.pan_no,
+          aadhar_number: selectedUser.details.aadhar_number,
+        },
+        ctc,
+        salaryDate,
+        salaryMonth,
+        paidDays,
+        lopDays,
+        earnings,
+        deductions,
+        netSalary: calculateNetSalary(),
+      };
+
+      // Make a POST request to your API to generate the HTML salary slip
+      const response = await axios.post(
+        `${API_BASE_URL}/api/users/generate-salary-slip/`, // Replace with your actual API endpoint
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+          },
+          responseType: "text", // We expect HTML in response
+        }
+      );
+
+      // Open the generated HTML content in a new window
+      const newWindow = window.open();
+      newWindow.document.write(response.data); // Write the HTML content to the new window
+      newWindow.document.close(); // Ensure the document is fully loaded
+
+      // Optionally, you could trigger the print dialog automatically
+      newWindow.print(); // Automatically opens the print dialog
+    } catch (error) {
+      console.error("Error exporting HTML:", error);
+    }
+  };
 
   const handleUserChange = (e) => {
     const userId = e.target.value;
@@ -423,6 +522,14 @@ const SalaryGeneration = () => {
             <h3 className="text-lg font-semibold text-gray-700 mb-4">
               Net Monthly Salary: ₹{calculateNetSalary().toFixed(2)}
             </h3>
+          </div>
+          <div className="text-right">
+            <button
+              onClick={handleExportToHtml}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+            >
+              Export to PDF
+            </button>
           </div>
         </div>
       </div>

@@ -16,6 +16,14 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from rest_framework.exceptions import NotFound
+from reportlab.lib.pagesizes import letter
+import json
+from io import BytesIO
+from django.http import JsonResponse, HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+from django.template.loader import get_template
+from django.shortcuts import render
 
 
 
@@ -1259,3 +1267,49 @@ class TimesheetDetailsView(APIView):
         # Serialize the timesheet data
         serializer = TimesheetSerializer(timesheets, many=True)
         return Response(serializer.data)
+ 
+
+
+class GenerateSalarySlipView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            # Extract the JSON payload
+            data = request.data
+            
+            # Extract user details and other data from payload
+            user_details = data.get('userDetails', {})
+            ctc = data.get('ctc', 0)
+            salary_date = data.get('salaryDate', '')
+            salary_month = data.get('salaryMonth', '')
+            earnings = data.get('earnings', [])
+            deductions = data.get('deductions', [])
+            net_salary = data.get('netSalary', 0)
+            paidDays = data.get('paidDays','')
+
+            # Calculate total earnings and total deductions
+            total_earnings = sum([earning['amount'] for earning in earnings])
+            total_deductions = sum([deduction['amount'] for deduction in deductions])
+
+            # Render the HTML template with the provided context
+            template = get_template('salary_slip.html')
+        
+            context = {
+                'user_details': user_details,
+                'earnings': earnings,
+                'deductions': deductions,
+                'net_salary': net_salary,
+                'salary_date': salary_date,
+                'salary_month': salary_month,
+                'ctc': ctc,
+                'total_earnings': total_earnings,
+                'total_deductions': total_deductions,
+                'paidDays': paidDays,
+            }
+            html = template.render(context)
+
+            # Return HTML as the response
+            return HttpResponse(html)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

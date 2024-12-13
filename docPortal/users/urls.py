@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView, LoginView, DocumentUploadView, UserDocumentsView, UpdatePasswordView, AllUserDocumentsView, FolderDocumentsView, UserProfileView, UpdateUserDetailsView, AllUserDetailsView, UpdateUserDetailsView, UpdateUserDetailsViewSelf, ReportingHierarchyView, PublicHolidayView, GetLeaveDetailsView, ApplyLeaveView, UserReportsView, ApproveLeaveView, CancelLeaveRequestView, RejectLeaveView, UserProjectsView, SubmitTimesheetView, UpdateTimesheetView, UserProjectDetailView, TimesheetDetailsView
+from .views import RegisterView, LoginView, DocumentUploadView, UserDocumentsView, UpdatePasswordView, AllUserDocumentsView, FolderDocumentsView, UserProfileView, UpdateUserDetailsView, AllUserDetailsView, UpdateUserDetailsView, UpdateUserDetailsViewSelf, ReportingHierarchyView, PublicHolidayView, GetLeaveDetailsView, ApplyLeaveView, UserReportsView, ApproveLeaveView, CancelLeaveRequestView, RejectLeaveView, UserProjectsView, SubmitTimesheetView, UpdateTimesheetView, UserProjectDetailView, TimesheetDetailsView, GenerateSalarySlipView
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
@@ -26,4 +26,5 @@ urlpatterns = [
     path('timesheet/update/<int:timesheet_id>/', UpdateTimesheetView.as_view(), name='update-timesheet'),
     path('projects/<int:id>/', UserProjectDetailView.as_view(), name='user-project-detail'),
     path('timesheet/details/<int:project_id>/', TimesheetDetailsView.as_view(), name='timesheet_details'),
+    path('generate-salary-slip/', GenerateSalarySlipView.as_view(), name='generate-salary-slip'),
 ]
